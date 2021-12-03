@@ -1,6 +1,7 @@
 package bgu.spl.mics;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Future object represents a promised result - an object that will
@@ -11,12 +12,17 @@ import java.util.concurrent.TimeUnit;
  * No public constructor is allowed except for the empty constructor.
  */
 public class Future<T> {
-	
+
+	private boolean isResolved;
+	private T result;
+
 	/**
 	 * This should be the the only public constructor in this class.
 	 */
 	public Future() {
 		//TODO: implement this
+		isResolved = false;
+		result = null;
 	}
 	
 	/**
@@ -30,6 +36,10 @@ public class Future<T> {
 	public T get() {
 		//TODO: implement this.
 		return null;
+
+		// pre - none
+		// post - ??
+		// @return result;
 	}
 	
 	/**
@@ -37,14 +47,23 @@ public class Future<T> {
      */
 	public void resolve (T result) {
 		//TODO: implement this.
+		isResolved = true;
+		this.result = result;
+
+		// param - none
+		// pre - !isResolved
+		// post - isResolved
 	}
 	
 	/**
      * @return true if this object has been resolved, false otherwise
      */
 	public boolean isDone() {
-		//TODO: implement this.
-		return false;
+		return isResolved;
+
+		// pre - none
+		// post - Future<T>.equals(@PRE(Future<T>))
+		// @return (isResolved())
 	}
 	
 	/**
@@ -52,7 +71,7 @@ public class Future<T> {
      * This method is non-blocking, it has a limited amount of time determined
      * by {@code timeout}
      * <p>
-     * @param timout 	the maximal amount of time units to wait for the result.
+     * @param timeout 	the maximal amount of time units to wait for the result.
      * @param unit		the {@link TimeUnit} time units to wait.
      * @return return the result of type T if it is available, if not, 
      * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has
@@ -60,7 +79,9 @@ public class Future<T> {
      */
 	public T get(long timeout, TimeUnit unit) {
 		//TODO: implement this.
-		return null;
-	}
 
+		return null;
+		// pre - none
+		// post - ???
+	}
 }
