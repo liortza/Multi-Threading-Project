@@ -6,5 +6,13 @@ package bgu.spl.mics.application.objects;
  */
 
 public class DataBatch {
-    
+    private Data data;
+    private int startIndex;
+    private GPU myGPU;
+
+    public DataBatch(Data data, int startIndex, GPU gpu) {
+        this.data = data;
+        this.startIndex = startIndex;
+        myGPU = gpu;
+    }
 }

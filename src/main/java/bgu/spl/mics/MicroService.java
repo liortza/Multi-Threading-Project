@@ -148,6 +148,7 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        //MessageBusImpl.register(this);
         initialize();
         while (!terminated) {
             System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
