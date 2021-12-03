@@ -1,5 +1,9 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.Message;
+
+import java.util.Queue;
+
 /**
  * Passive object representing a single GPU.
  * Add all the fields described in the assignment as private fields.
@@ -11,6 +15,58 @@ public class GPU {
      */
     enum Type {RTX3090, RTX2080, GTX1080}
 
-    private Type type;
+    static int currentTick = 0;
 
+    private Type type;
+    private Model model;
+    private Cluster cluster;
+    private int trainingTicks;
+    private int vRamCapacity;
+    private int availableVRam;
+    private Queue<Message> messageQueue;
+    private Queue<DataBatch> disc; // incoming from MessageBus, unprocessed
+    private Queue<DataBatch> vRam; // incoming from cluster, processed
+
+    public GPU(Type type, Cluster cluster) {
+        this.type = type;
+        // TODO: trainingTicks, vRamCapacity, availableVRam
+        model = null;
+        this.cluster = cluster;
+    }
+
+    private void updateTick() {
+
+    }
+
+    private void retrieveData() { // retrieve data from model
+
+    }
+
+    private boolean isModel() {
+        return false;
+    }
+
+    private void prepareBatches() {
+
+    }
+
+    private void sendBatchesToCluster() {
+
+    }
+
+    public boolean hasAvailableVRam() {
+        return false;
+    }
+
+    public void insertBatchToVRam() {
+
+    }
+
+    private void removeBatchFromVRam() {
+
+    }
+
+    private boolean doneProcessing() {
+        return false;
+    }
 }

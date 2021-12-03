@@ -8,8 +8,11 @@ import static org.junit.Assert.*;
 
 public class MessageBusImplTest {
 
+    private MessageBusImpl bus;
+
     @Before
     public void setUp() throws Exception {
+        bus = new MessageBusImpl();
     }
 
     @After
@@ -18,6 +21,7 @@ public class MessageBusImplTest {
 
     @Test
     public void subscribeEvent() {
+        //assertTrue(bus);
     }
 
     @Test
