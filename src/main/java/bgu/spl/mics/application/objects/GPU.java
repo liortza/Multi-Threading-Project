@@ -26,12 +26,14 @@ public class GPU {
     private Queue<Message> messageQueue;
     private Queue<DataBatch> disc; // incoming from MessageBus, unprocessed
     private Queue<DataBatch> vRam; // incoming from cluster, processed
+    private int ticksUsed;
 
     public GPU(Type type, Cluster cluster) {
         this.type = type;
         // TODO: trainingTicks, vRamCapacity, availableVRam
         model = null;
         this.cluster = cluster;
+        ticksUsed = 0;
     }
 
     private void updateTick() {
@@ -40,10 +42,6 @@ public class GPU {
 
     private void retrieveData() { // retrieve data from model
 
-    }
-
-    private boolean isModel() {
-        return false;
     }
 
     private void prepareBatches() {

@@ -25,7 +25,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @param m != null
 	 * @pre isRegistered(m) == true
 	 * @pre isSubscribedToEvent(type, m) == false
-	 * @pre isSubscribedToEvent(type, m) == true
+	 * @post isSubscribedToEvent(type, m) == true
 	 */
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {

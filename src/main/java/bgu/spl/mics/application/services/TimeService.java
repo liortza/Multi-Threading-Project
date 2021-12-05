@@ -13,9 +13,14 @@ import bgu.spl.mics.MicroService;
  */
 public class TimeService extends MicroService{
 
-	public TimeService() {
+	int tickCounter = 1;
+	int speed;
+	int duration;
+
+	public TimeService(int speed, int duration) {
 		super("TimeService");
-		// TODO Implement this
+		this.speed = speed;
+		this.duration = duration;
 	}
 
 	@Override

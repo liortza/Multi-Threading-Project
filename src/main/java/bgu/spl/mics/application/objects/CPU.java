@@ -13,19 +13,21 @@ public class CPU {
     static int currentTick = 0;
 
     private int cores;
-    private Queue<DataBatch> data;
+    private Queue<DataBatch> data; // blocking queue??
     private int capacity;
     private Cluster cluster;
     private DataBatch currentBatch;
+    private int ticksUsed;
 
     public CPU(int cores, Cluster cluster) {
         this.cores = cores;
         this.data = new LinkedList<>();
         capacity = cores; // TODO: see how to define capacity
         this.cluster = cluster;
+        ticksUsed = 0;
     }
 
-    private void updateTick() {
+    private void updateTick() { // TODO: input?
 
     }
 
