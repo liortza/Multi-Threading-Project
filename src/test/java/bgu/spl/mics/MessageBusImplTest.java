@@ -43,7 +43,7 @@ public class MessageBusImplTest {
             assertEquals(event, received);
         } catch (InterruptedException e) {
         }
-        assertThrows("must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
+        assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class MessageBusImplTest {
             assertEquals(broadcast, received);
         } catch (InterruptedException e) {
         }
-        assertThrows("must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
+        assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class MessageBusImplTest {
         assertFalse(bus.isRegistered(m1));
         bus.register(m1);
         assertTrue(bus.isRegistered(m1));
-        assertThrows(IllegalStateException.class, () -> bus.register(m1));
+        assertThrows("MicroService is already registered", IllegalStateException.class, () -> bus.register(m1));
     }
 
     @Test
@@ -90,6 +90,6 @@ public class MessageBusImplTest {
         assertTrue(bus.isRegistered(m3));
         bus.unregister(m3);
         assertFalse(bus.isRegistered(m3));
-        assertThrows(IllegalStateException.class, () -> bus.unregister(m3));
+        assertThrows("MicroService must be registered to unregister", IllegalStateException.class, () -> bus.unregister(m3));
     }
 }

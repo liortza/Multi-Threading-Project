@@ -40,41 +40,41 @@ public class GPUTest {
 
     @Test
     public void prepareBatches() {
-        assertEquals(0, gpu.numOfBatches);
-        int discSize = gpu.disc.size();
+        assertEquals(0, gpu.getNumOfBatches());
+        int discSize = gpu.getDiscSize();
         gpu.prepareBatches(data); // should create 20 Batches
-        assertEquals(discSize + 20, gpu.disc.size());
-        assertEquals(20, gpu.numOfBatches);
+        assertEquals(discSize + 20, gpu.getDiscSize());
+        assertEquals(20, gpu.getNumOfBatches());
         assertThrows("Cannot prepare batches from null data", IllegalArgumentException.class, () -> gpu.prepareBatches(null));
     }
 
     @Test
     public void sendBatchesToCluster() {
         gpu.prepareBatches(data);
-        int discSize = gpu.disc.size();
+        int discSize = gpu.getDiscSize();
         gpu.sendBatchesToCluster(discSize);
-        assertEquals(0, gpu.disc.size());
+        assertEquals(0, gpu.getDiscSize());
         assertThrows("numOfBatches must be positive", IllegalArgumentException.class, () -> gpu.sendBatchesToCluster(-1));
     }
 
     @Test
     public void trainProcessed() {
         gpu.prepareBatches(data);
-        DataBatch processed = gpu.disc.remove();
+        DataBatch processed = gpu.getNextBatch();
         processed.isProcessed = true;
-        gpu.vRam.add(processed);
+        gpu.addToVRam(processed);
         gpu.trainProcessed(); // should take 1 tick
         assertFalse(processed.isTrained);
         gpu.updateTick();
         assertTrue(processed.isTrained);
-        assertTrue(gpu.vRam.isEmpty());
+        assertTrue(gpu.vRamIsEmpty());
     }
 
     @Test
     public void testModel() {
-        model.isTrained = true;
-        assertEquals("None", model.status);
+        model.setTrained(true);
+        assertEquals("None", model.getStatus());
         gpu.testModel();
-        assertNotEquals("None", model.status);
+        assertNotEquals("None", model.getStatus()); // can be "Good" or "Bad"
     }
 }

@@ -22,14 +22,13 @@ public class GPU {
     public int currentTick;
 
     private Type type;
-    public Model model; // public for tests
-    public int numOfBatches;
+    private Model model;
+    private int numOfBatches;
     private Cluster cluster;
     private int vRamCapacity;
-    private int availableVRam;
     private Queue<Message> messageQueue;
-    public Queue<DataBatch> disc; // unprocessed DataBatches, before being sent to CPU's
-    public Queue<DataBatch> vRam; // incoming from cluster, processed
+    private Queue<DataBatch> disc; // unprocessed DataBatches, before being sent to CPU's
+    private Queue<DataBatch> vRam; // incoming from cluster, processed
     private int ticksUsed;
 
     public GPU(Type type, Cluster cluster) {
@@ -41,7 +40,7 @@ public class GPU {
         ticksUsed = 0;
         messageQueue = new LinkedList<>();
         disc = new LinkedList<>();
-        vRam = new LinkedBlockingQueue<>();
+        vRam = new LinkedBlockingQueue<>(vRamCapacity);
     }
 
     /**
@@ -85,7 +84,6 @@ public class GPU {
     }
 
     /**
-     *
      * @param numOfBatches > 0
      * @pre none
      * @post disc.size() == max{0, @pre(disc.size()) - numOfBatches}
@@ -111,5 +109,29 @@ public class GPU {
      */
     public void testModel() {
 
+    }
+
+    public Model getModel() {
+        return model;
+    }
+
+    public int getNumOfBatches() {
+        return numOfBatches;
+    }
+
+    public int getDiscSize() {
+        return disc.size();
+    }
+
+    public DataBatch getNextBatch() { // used for tests
+        return disc.remove();
+    }
+
+    public void addToVRam(DataBatch dataBatch) { // used for tests
+        vRam.add(dataBatch);
+    }
+
+    public boolean vRamIsEmpty() { // used for tests
+        return vRam.isEmpty();
     }
 }

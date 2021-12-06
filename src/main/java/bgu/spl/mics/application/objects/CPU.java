@@ -13,8 +13,8 @@ public class CPU {
     public int currentTick = 0; // public for tests
 
     private int cores;
-    public Queue<DataBatch> incoming; // public for tests
-    public Queue<DataBatch> outgoing; // public for tests
+    private Queue<DataBatch> incoming; // public for tests
+    private Queue<DataBatch> outgoing; // public for tests
     private int capacity;
     private Cluster cluster;
     private int ticksUsed;
@@ -51,6 +51,7 @@ public class CPU {
     /**
      * @pre !incoming.isEmpty()
      * @post outgoing.size() = @pre(outgoing.size) + @pre(incoming.size())
+     * @post ticksUsed > @pre(ticksUsed)
      */
     public void processData() {
         if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
@@ -59,5 +60,21 @@ public class CPU {
         }
         // incoming is empty
         // cpu service should bring more data
+    }
+
+    public void addToIncoming(DataBatch dataBatch) { // used for tests
+        incoming.add(dataBatch);
+    }
+
+    public int getIncomingSize() { // used for tests
+        return incoming.size();
+    }
+
+    public int getOutgoingSize() { // used for tests
+        return outgoing.size();
+    }
+
+    public int getTicksUsed() { // used for tests
+        return ticksUsed;
     }
 }

@@ -34,14 +34,16 @@ public class CPUTest {
     public void processData() {
         Data data = new Data(Data.Type.Images, 1000);
         DataBatch imageBatch = new DataBatch(data, 0, gpu);
-        cpu.incoming.add(imageBatch); // should take 1 tick
-        int incomingSize = cpu.incoming.size();
-        int outgoingSize = cpu.outgoing.size();
-        cpu.processData();
+        cpu.addToIncoming(imageBatch); // should take 1 tick
+        int incomingSize = cpu.getIncomingSize();
+        int outgoingSize = cpu.getOutgoingSize();
+        int ticksUsed = cpu.getTicksUsed();
+        cpu.processData(); // should take 1 tick
         assertFalse(imageBatch.isProcessed);
         cpu.updateTick();
         assertTrue(imageBatch.isProcessed);
-        assertEquals(incomingSize + outgoingSize, cpu.outgoing.size());
+        assertEquals(incomingSize + outgoingSize, cpu.getOutgoingSize());
+        assertEquals(ticksUsed + 1, cpu.getTicksUsed());
         assertThrows("cannot process data with empty incoming queue", IllegalStateException.class, () -> cpu.processData());
     }
 }

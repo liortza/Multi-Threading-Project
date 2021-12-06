@@ -34,7 +34,7 @@ public class FutureTest {
         int result = f.get();
         long time2 = System.currentTimeMillis(); // time after sleep
         assertTrue(time2 - time1 >= 1000); // at least 1000 milliseconds passed
-        assertEquals(5, result); // assert correct value
+        assertEquals(5, result);
     }
 
     @Test

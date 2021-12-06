@@ -6,11 +6,27 @@ package bgu.spl.mics.application.objects;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class Model {
-    public String name, status;
+    private String name, status;
     private Data data;
-    public boolean isTrained; // public for tests
+    private boolean isTrained;
 
     public Model(String name, Data data) {
         status = "None";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isTrained() {
+        return isTrained;
+    }
+
+    public void setTrained(boolean trained) {
+        isTrained = trained;
     }
 }
