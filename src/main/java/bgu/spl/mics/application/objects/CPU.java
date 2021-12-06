@@ -10,11 +10,11 @@ import java.util.Queue;
  */
 public class CPU {
 
-    public int currentTick = 0; // public for tests
+    private int currentTick = 0;
 
     private int cores;
-    private Queue<DataBatch> incoming; // public for tests
-    private Queue<DataBatch> outgoing; // public for tests
+    private Queue<DataBatch> incoming;
+    private Queue<DataBatch> outgoing;
     private int capacity;
     private Cluster cluster;
     private int ticksUsed;
@@ -72,6 +72,10 @@ public class CPU {
 
     public int getOutgoingSize() { // used for tests
         return outgoing.size();
+    }
+
+    public int getCurrentTick() { // used for tests
+        return currentTick;
     }
 
     public int getTicksUsed() { // used for tests

@@ -19,7 +19,7 @@ public class GPU {
      */
     enum Type {RTX3090, RTX2080, GTX1080}
 
-    public int currentTick;
+    private int currentTick;
 
     private Type type;
     private Model model;
@@ -109,6 +109,10 @@ public class GPU {
      */
     public void testModel() {
 
+    }
+
+    public int getCurrentTick() {
+        return currentTick;
     }
 
     public Model getModel() {

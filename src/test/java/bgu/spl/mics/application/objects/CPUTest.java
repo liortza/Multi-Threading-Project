@@ -25,9 +25,9 @@ public class CPUTest {
 
     @Test
     public void updateTick() {
-        int currentTick = cpu.currentTick;
+        int currentTick = cpu.getCurrentTick();
         cpu.updateTick();
-        assertEquals(currentTick + 1, cpu.currentTick);
+        assertEquals(currentTick + 1, cpu.getCurrentTick());
     }
 
     @Test

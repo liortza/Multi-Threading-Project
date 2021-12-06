@@ -33,9 +33,9 @@ public class GPUTest {
 
     @Test
     public void updateTick() {
-        int currentTick = gpu.currentTick;
+        int currentTick = gpu.getCurrentTick();
         gpu.updateTick();
-        assertEquals(currentTick + 1, gpu.currentTick);
+        assertEquals(currentTick + 1, gpu.getCurrentTick());
     }
 
     @Test
