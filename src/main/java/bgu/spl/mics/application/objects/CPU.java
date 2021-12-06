@@ -10,41 +10,54 @@ import java.util.Queue;
  */
 public class CPU {
 
-    static int currentTick = 0;
+    public int currentTick = 0; // public for tests
 
     private int cores;
-    private Queue<DataBatch> data; // blocking queue??
+    public Queue<DataBatch> incoming; // public for tests
+    public Queue<DataBatch> outgoing; // public for tests
     private int capacity;
     private Cluster cluster;
-    private DataBatch currentBatch;
     private int ticksUsed;
 
     public CPU(int cores, Cluster cluster) {
         this.cores = cores;
-        this.data = new LinkedList<>();
+        this.incoming = new LinkedList<>();
+        this.outgoing = new LinkedList<>();
         capacity = cores; // TODO: see how to define capacity
         this.cluster = cluster;
         ticksUsed = 0;
     }
 
-    private void updateTick() { // TODO: input?
+    /**
+     * @pre none
+     * @post currentTick == @pre(currentTick) + 1
+     */
 
+    public void updateTick() {
+//        currentTick++;
+//        if ()
     }
 
-    private boolean hasNextBatch() {
-        return false;
+//    public DataBatch getData() {
+//        if (incoming.isEmpty()) {
+//            try {
+//                cluster.fetchData(capacity);
+//            } catch (InterruptedException e) {
+//            } // TODO: make sure works correctly
+//        }
+//        return incoming.remove();
+//    }
+
+    /**
+     * @pre !incoming.isEmpty()
+     * @post outgoing.size() = @pre(outgoing.size) + @pre(incoming.size())
+     */
+    public void processData() {
+        if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
+        while (!incoming.isEmpty()) {
+
+        }
+        // incoming is empty
+        // cpu service should bring more data
     }
-
-    private void getDataFromCluster() {
-
-    }
-
-    private void processData() {
-
-    }
-
-    public boolean doneProcessing() {
-        return false;
-    }
-
 }

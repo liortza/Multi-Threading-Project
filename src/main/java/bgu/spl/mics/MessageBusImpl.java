@@ -29,10 +29,11 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
+		if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
 		// TODO Auto-generated method stub
 	}
 
-	private <T> boolean isSubscribedToEvent(Class<? extends Event<T>> type, MicroService m) {
+	public <T> boolean isSubscribedToEvent(Class<? extends Event<T>> type, MicroService m) {
 		Pair<ArrayList<MicroService>, Integer> pair = eventList.get(type);
 		return pair.getKey().contains(m);
 	}
@@ -47,10 +48,11 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
+		if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
 		// TODO Auto-generated method stub
 	}
 
-	private <T> boolean isSubscribedToBroadcast(Class<? extends Event<T>> type, MicroService m) {
+	public <T> boolean isSubscribedToBroadcast(Class<? extends Event<T>> type, MicroService m) {
 		return broadcastList.get(type).contains(m);
 	}
 
@@ -108,10 +110,11 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void register(MicroService m) {
+		if (isRegistered(m)) throw new IllegalStateException("MicroService already registered");
 		// TODO Auto-generated method stub
 	}
 
-	private boolean isRegistered(MicroService m) {
+	public boolean isRegistered(MicroService m) {
 		return queues.containsKey(m);
 	}
 
@@ -126,10 +129,7 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public void unregister(MicroService m) {
 		// TODO Auto-generated method stub
-
-		// param - m != null
-		// pre - m is registered (has a queue)
-		// pre - m is not registered (doesn't have a queue)
+		if (!isRegistered(m)) throw new IllegalStateException("MicroService is not registered");
 	}
 
 	/**

@@ -9,10 +9,13 @@ public class DataBatch {
     private Data data;
     private int startIndex;
     private GPU myGPU;
+    public boolean isProcessed, isTrained; // public for tests
 
     public DataBatch(Data data, int startIndex, GPU gpu) {
         this.data = data;
         this.startIndex = startIndex;
         myGPU = gpu;
+        isProcessed = false;
+        isTrained = false;
     }
 }
