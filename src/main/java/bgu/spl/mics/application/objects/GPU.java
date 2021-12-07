@@ -98,6 +98,7 @@ public class GPU {
      * @pre vRam.peek().isTrained == false
      * @post vRam.isEmpty() || currentTick == duration
      * @post vRam.peek().isTrained == true
+     * @post currentTick > @pre(currentTick)
      */
     public void trainProcessed() {
         if (vRam.isEmpty()) throw new IllegalStateException("has no processed batches to train");

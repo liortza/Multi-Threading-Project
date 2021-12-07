@@ -39,9 +39,9 @@ public class CPUTest {
         int outgoingSize = cpu.getOutgoingSize();
         int ticksUsed = cpu.getTicksUsed();
         cpu.processData(); // should take 1 tick
-        assertFalse(imageBatch.isProcessed);
+        assertFalse(imageBatch.isProcessed());
         cpu.updateTick();
-        assertTrue(imageBatch.isProcessed);
+        assertTrue(imageBatch.isProcessed());
         assertEquals(incomingSize + outgoingSize, cpu.getOutgoingSize());
         assertEquals(ticksUsed + 1, cpu.getTicksUsed());
         assertThrows("cannot process data with empty incoming queue", IllegalStateException.class, () -> cpu.processData());

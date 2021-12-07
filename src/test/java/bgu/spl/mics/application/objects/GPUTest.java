@@ -61,12 +61,12 @@ public class GPUTest {
     public void trainProcessed() {
         gpu.prepareBatches(data);
         DataBatch processed = gpu.getNextBatch();
-        processed.isProcessed = true;
+        processed.setProcessed(true);
         gpu.addToVRam(processed);
         gpu.trainProcessed(); // should take 1 tick
-        assertFalse(processed.isTrained);
+        assertFalse(processed.isTrained());
         gpu.updateTick();
-        assertTrue(processed.isTrained);
+        assertTrue(processed.isTrained());
         assertTrue(gpu.vRamIsEmpty());
     }
 
