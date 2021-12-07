@@ -1,6 +1,9 @@
 package bgu.spl.mics.application.objects;
 
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * Passive object representing the cluster.
  * <p>
@@ -10,13 +13,23 @@ package bgu.spl.mics.application.objects;
  */
 public class Cluster {
 
+	private Queue<DataBatch> queue;
 
 	/**
      * Retrieves the single instance of this class.
      */
+
+	public Cluster() {
+		queue = new ConcurrentLinkedQueue<>();
+	}
+
 	public static Cluster getInstance() {
 		//TODO: Implement this
 		return null;
+	}
+
+	public Queue<DataBatch> fetchData(int dataBatches) throws InterruptedException{
+		return null; // TODO: wait if queue is empty
 	}
 
 }

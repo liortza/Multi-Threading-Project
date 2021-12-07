@@ -10,41 +10,75 @@ import java.util.Queue;
  */
 public class CPU {
 
-    static int currentTick = 0;
+    private int currentTick = 0;
 
     private int cores;
-    private Queue<DataBatch> data; // blocking queue??
+    private Queue<DataBatch> incoming;
+    private Queue<DataBatch> outgoing;
     private int capacity;
     private Cluster cluster;
-    private DataBatch currentBatch;
     private int ticksUsed;
 
     public CPU(int cores, Cluster cluster) {
         this.cores = cores;
-        this.data = new LinkedList<>();
+        this.incoming = new LinkedList<>();
+        this.outgoing = new LinkedList<>();
         capacity = cores; // TODO: see how to define capacity
         this.cluster = cluster;
         ticksUsed = 0;
     }
 
-    private void updateTick() { // TODO: input?
+    /**
+     * @pre none
+     * @post currentTick == @pre(currentTick) + 1
+     */
 
+    public void updateTick() {
+//        currentTick++;
+//        if ()
     }
 
-    private boolean hasNextBatch() {
-        return false;
+//    public DataBatch getData() {
+//        if (incoming.isEmpty()) {
+//            try {
+//                cluster.fetchData(capacity);
+//            } catch (InterruptedException e) {
+//            } // TODO: make sure works correctly
+//        }
+//        return incoming.remove();
+//    }
+
+    /**
+     * @pre !incoming.isEmpty()
+     * @post outgoing.size() = @pre(outgoing.size) + @pre(incoming.size())
+     * @post ticksUsed > @pre(ticksUsed)
+     */
+    public void processData() {
+        if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
+        while (!incoming.isEmpty()) {
+
+        }
+        // incoming is empty
+        // cpu service should bring more data
     }
 
-    private void getDataFromCluster() {
-
+    public void addToIncoming(DataBatch dataBatch) { // used for tests
+        incoming.add(dataBatch);
     }
 
-    private void processData() {
-
+    public int getIncomingSize() { // used for tests
+        return incoming.size();
     }
 
-    public boolean doneProcessing() {
-        return false;
+    public int getOutgoingSize() { // used for tests
+        return outgoing.size();
     }
 
+    public int getCurrentTick() { // used for tests
+        return currentTick;
+    }
+
+    public int getTicksUsed() { // used for tests
+        return ticksUsed;
+    }
 }

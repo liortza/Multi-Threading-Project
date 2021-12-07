@@ -42,8 +42,8 @@ public class MessageBusImplTest {
             Message received = bus.awaitMessage(m4);
             assertEquals(event, received);
         } catch (InterruptedException e) {
-            // TODO ??
         }
+        assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
     }
 
     @Test
@@ -55,8 +55,8 @@ public class MessageBusImplTest {
             Message received = bus.awaitMessage(m3);
             assertEquals(broadcast, received);
         } catch (InterruptedException e) {
-            // TODO ??
         }
+        assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
     }
 
     @Test
@@ -68,7 +68,6 @@ public class MessageBusImplTest {
             Message received = bus.awaitMessage(m4);
             assertEquals(event, received);
         } catch (InterruptedException e) {
-            // TODO ??
         }
         bus.complete(event, "result");
         assert f1 != null;
@@ -76,58 +75,21 @@ public class MessageBusImplTest {
         assertEquals(f1.get(), "result");
     }
 
-//    @Test
-//    public void sendBroadcast() {
-//        bus.register(m3);
-//        bus.subscribeBroadcast(ExampleBroadcast.class, m3);
-//        m1.sendBroadcast(broadcast);
-//        try {
-//            Message received = bus.awaitMessage(m3);
-//            assertEquals(broadcast, received);
-//        } catch (InterruptedException e) {
-//            // TODO ??
-//        }
-//    }
-//
-//    @Test
-//    public void sendEvent() {
-//        bus.register(m4);
-//        bus.subscribeEvent(ExampleEvent.class, m4);
-//        Future<String> f1 = m2.sendEvent(event);
-//        try {
-//            Message received = bus.awaitMessage(m4);
-//            assertEquals(event, received);
-//        } catch (InterruptedException e) {
-//            // TODO ??
-//        }
-//    }
-//
-//    @Test
-//    public void register() {
-//        // TODO: try to subscribe before register, catch some exception from HashMap? legal test?
-//    }
+
+    @Test
+    public void register() {
+        assertFalse(bus.isRegistered(m1));
+        bus.register(m1);
+        assertTrue(bus.isRegistered(m1));
+        assertThrows("MicroService is already registered", IllegalStateException.class, () -> bus.register(m1));
+    }
 
     @Test
     public void unregister() {
         bus.register(m3);
-        bus.unregister(m3); // TODO: try to subscribe before register, catch some exception from HashMap? legal test?
-        try {
-            bus.awaitMessage(m3);
-        } catch (InterruptedException e) {
-            // TODO ??
-        }
+        assertTrue(bus.isRegistered(m3));
+        bus.unregister(m3);
+        assertFalse(bus.isRegistered(m3));
+        assertThrows("MicroService must be registered to unregister", IllegalStateException.class, () -> bus.unregister(m3));
     }
-
-//    @Test
-//    public void awaitMessage() {
-//        bus.register(m3);
-//        bus.subscribeBroadcast(ExampleBroadcast.class, m3);
-//        m1.sendBroadcast(broadcast);
-//        try {
-//            Message received = bus.awaitMessage(m3);
-//            assertEquals(broadcast, received);
-//        } catch (InterruptedException e) {
-//            // TODO ??
-//        }
-//    }
 }
