@@ -44,6 +44,7 @@ public class FutureTest {
         assertTrue(f.isDone());
         int result = f.get();
         assertEquals(5, result);
+        assertThrows("cannot resolve null value", IllegalArgumentException.class, () -> f.resolve(null));
     }
 
     @Test
