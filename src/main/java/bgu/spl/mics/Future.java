@@ -36,10 +36,6 @@ public class Future<T> {
 	public T get() {
 		//TODO: implement this.
 		return null;
-
-		// pre - none
-		// post - ??
-		// @return result;
 	}
 	
 	/**
@@ -47,12 +43,9 @@ public class Future<T> {
      */
 	public void resolve (T result) {
 		//TODO: implement this.
+		if (result == null) throw new IllegalArgumentException("result cannot be null");
 		isResolved = true;
 		this.result = result;
-
-		// param - none
-		// pre - !isResolved
-		// post - isResolved
 	}
 	
 	/**

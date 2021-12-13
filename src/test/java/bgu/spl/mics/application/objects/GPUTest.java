@@ -15,7 +15,8 @@ public class GPUTest {
     GPU gpu;
     Data data;
     Model model;
-    Event<Boolean> trainEvent, testEvent;
+    Event<Model> trainEvent;
+    Event<Model.Status> testEvent;
 
     @Before
     public void setUp() throws Exception {
