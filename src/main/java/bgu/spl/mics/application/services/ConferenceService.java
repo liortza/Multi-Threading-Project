@@ -1,11 +1,17 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Callback;
+import bgu.spl.mics.Message;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.PublishConfrenceBroadcast;
 import bgu.spl.mics.application.messages.PublishResultsEvent;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.ConfrenceInformation;
 import bgu.spl.mics.application.objects.Model;
+
+import java.util.HashMap;
 
 /**
  * Conference service is in charge of
@@ -24,12 +30,21 @@ public class ConferenceService extends MicroService {
         super(name);
         this.myConference = myConference;
         currentTick = 0;
-        // TODO Implement this
     }
 
     @Override
     protected void initialize() {
-        //super.subscribeEvent(PublishResultsEvent.class, this);
+        // PublishResultsEvent
+        Callback<PublishResultsEvent> publishCallback = (PublishResultsEvent e) -> handlePublishEvent(e);
+        subscribeEvent(PublishResultsEvent.class, publishCallback);
+
+        // TickBroadcast
+        Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> updateTick();
+        subscribeBroadcast(TickBroadcast.class, tickCallback);
+
+        // TerminateBroadcast
+        Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
+        subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {
@@ -46,6 +61,6 @@ public class ConferenceService extends MicroService {
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
-        super.sendBroadcast(broadcast);
+        sendBroadcast(broadcast);
     }
 }

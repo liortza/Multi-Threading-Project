@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.application.services.CPUService;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -10,6 +12,7 @@ import java.util.Queue;
  */
 public class CPU {
 
+    private static int id = 0;
     private int currentTick = 0;
 
     private int cores;
@@ -18,6 +21,7 @@ public class CPU {
     private int capacity;
     private Cluster cluster;
     private int ticksUsed;
+    private int myId;
 
     public CPU(int cores, Cluster cluster) {
         this.cores = cores;
@@ -26,6 +30,8 @@ public class CPU {
         capacity = cores; // TODO: see how to define capacity
         this.cluster = cluster;
         ticksUsed = 0;
+        myId = ++id;
+        new CPUService(String.valueOf(myId), this);
     }
 
     /**

@@ -1,6 +1,10 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.TickBroadcast;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * TimeService is the global system timer There is only one instance of this micro-service.
@@ -16,6 +20,7 @@ public class TimeService extends MicroService{
 	int tickCounter = 1;
 	int speed;
 	int duration;
+	Timer timer;
 
 	public TimeService(int speed, int duration) {
 		super("TimeService");
@@ -25,8 +30,24 @@ public class TimeService extends MicroService{
 
 	@Override
 	protected void initialize() {
-		// TODO Implement this
-		
+		timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if (tickCounter != duration) sendTickBroadcast();
+				else sendTerminateBroadcast();
+			}
+		}, 0, speed);
 	}
 
+	private void sendTickBroadcast() {
+		sendBroadcast(new TickBroadcast());
+		tickCounter++;
+	}
+
+	private void sendTerminateBroadcast() {
+		// send
+		timer.cancel();
+		terminate();
+	}
 }
