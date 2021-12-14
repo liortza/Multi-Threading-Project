@@ -21,4 +21,6 @@ public class Data {
         processed = 0;
         this.size = size;
     }
+
+    public Data.Type getType() { return type; }
 }

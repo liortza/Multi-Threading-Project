@@ -17,7 +17,8 @@ public class CPU {
 
     private int cores;
     private Queue<DataBatch> incoming;
-    private Queue<DataBatch> outgoing;
+    private DataBatch current = null;
+    private int ticksRemaining = 0;
     private int capacity;
     private Cluster cluster;
     private int ticksUsed;
@@ -26,7 +27,6 @@ public class CPU {
     public CPU(int cores, Cluster cluster) {
         this.cores = cores;
         this.incoming = new LinkedList<>();
-        this.outgoing = new LinkedList<>();
         capacity = cores; // TODO: see how to define capacity
         this.cluster = cluster;
         ticksUsed = 0;
@@ -40,14 +40,26 @@ public class CPU {
      */
 
     public void updateTick() {
-//        currentTick++;
-//        if ()
+        currentTick++;
+        if (current != null & ticksRemaining == 0) { // finished processing batch
+            current.process();
+            cluster.incomingBatchFromCPU(current);
+            if (!incoming.isEmpty()) { // start processing next batch
+                current = incoming.remove();
+                // update ticksRemaining
+            } else {
+                current = null;
+                cluster.fetchUnprocessedDataCPU(cores);
+            }
+        } else if (current != null & ticksRemaining > 0) {
+
+        }
     }
 
 //    public DataBatch getData() {
 //        if (incoming.isEmpty()) {
 //            try {
-//                cluster.fetchData(capacity);
+//                cluster.fetchUnprocessedDataCPU(capacity);
 //            } catch (InterruptedException e) {
 //            } // TODO: make sure works correctly
 //        }
@@ -64,8 +76,9 @@ public class CPU {
         while (!incoming.isEmpty()) {
 
         }
-        // incoming is empty
+        // if incoming is empty
         // cpu service should bring more data
+        // cluster.incomingBatchFromCPU();
     }
 
     public void addToIncoming(DataBatch dataBatch) { // used for tests
@@ -74,10 +87,6 @@ public class CPU {
 
     public int getIncomingSize() { // used for tests
         return incoming.size();
-    }
-
-    public int getOutgoingSize() { // used for tests
-        return outgoing.size();
     }
 
     public int getCurrentTick() { // used for tests

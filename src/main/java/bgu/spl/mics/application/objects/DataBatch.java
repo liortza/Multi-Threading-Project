@@ -23,8 +23,8 @@ public class DataBatch {
         return processed;
     }
 
-    public void setProcessed(boolean processed) {
-        this.processed = processed;
+    public void process() {
+        processed = true;
     }
 
     public boolean isTrained() {
@@ -34,4 +34,6 @@ public class DataBatch {
     public void setTrained () {
         trained = true;
     }
+
+    public Data.Type getType() { return data.}
 }
