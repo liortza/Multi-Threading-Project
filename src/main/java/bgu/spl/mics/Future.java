@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -75,8 +77,23 @@ public class Future<T> {
      * elapsed, return null.
      */
     public T get(long timeout, TimeUnit unit) {
-        //TODO: implement this.
+        Thread t = new Thread(() -> {
+            try {
+                unit.sleep(timeout);
+            } catch (InterruptedException e) {
+            }
+            this.notifyAll();
+        });
+        t.start();
 
-        return null;
+        synchronized (this) {
+            while (result == null) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+        return result;
     }
 }

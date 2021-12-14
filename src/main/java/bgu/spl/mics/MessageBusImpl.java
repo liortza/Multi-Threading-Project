@@ -92,10 +92,6 @@ public class MessageBusImpl implements MessageBus {
         futuresList.get(e).resolve(result);
     }
 
-    private <T> T getFutureValue(Event<T> e) {
-        return (T) futuresList.get(e).get();
-    }
-
     /**
      * @param b =! null
      * @pre none

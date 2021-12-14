@@ -11,4 +11,6 @@ public class TrainModelEvent implements Event<Model> {
         this.name = name;
         this.model = model;
     }
+
+    public Model getModel() { return model; }
 }

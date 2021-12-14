@@ -9,6 +9,7 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -24,7 +25,6 @@ public class StudentService extends MicroService {
     private Future<Model> trainFuture;
     private Future<Model.Status> testFuture;
     private Future<Boolean> publishFuture;
-    private int currentTick = 0;
 
     public StudentService(String name, Student myStudent) {
         super(name);
@@ -51,11 +51,11 @@ public class StudentService extends MicroService {
         if (next != null) {
             TrainModelEvent trainEvent = new TrainModelEvent(getName(), next);
             trainFuture = sendEvent(trainEvent);
-        } else terminate(); // no more models to train
+        }
     }
 
     private void sendTestEvent() {
-        TestModelEvent testEvent = new TestModelEvent(getName(), trainFuture.get()); // TODO: blocking method ??
+        TestModelEvent testEvent = new TestModelEvent(getName(), trainFuture.get(); // TODO: blocking method ??
         // TODO: use isDone()?
         testFuture = sendEvent(testEvent);
         // ......
@@ -66,7 +66,6 @@ public class StudentService extends MicroService {
     }
 
     private void updateTick() {
-        currentTick++;
         // call train, test, publish
     }
 

@@ -29,11 +29,11 @@ public class GPUService extends MicroService {
     @Override
     protected void initialize() {
         // TrainModelEvent
-        Callback<TrainModelEvent> trainCallback = (TrainModelEvent e) -> gpu.trainModel();
+        Callback<TrainModelEvent> trainCallback = (TrainModelEvent e) -> gpu.handleTrainEvent(e);
         subscribeEvent(TrainModelEvent.class, trainCallback);
 
         // TestModelEvent
-        Callback<TestModelEvent> testCallback = (TestModelEvent e) -> gpu.trainModel();
+        Callback<TestModelEvent> testCallback = (TestModelEvent e) -> gpu.handleTestEvent(e);
         subscribeEvent(TestModelEvent.class, testCallback);
 
         // TickBroadcast

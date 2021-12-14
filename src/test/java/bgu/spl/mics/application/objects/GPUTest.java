@@ -3,7 +3,6 @@ package bgu.spl.mics.application.objects;
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TrainModelEvent;
-import bgu.spl.mics.example.messages.ExampleEvent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,11 +40,11 @@ public class GPUTest {
 
     @Test
     public void prepareBatches() {
-        assertEquals(0, gpu.getNumOfBatches());
+        assertEquals(0, gpu.getRemainingModelBatches());
         int discSize = gpu.getDiscSize();
         gpu.prepareBatches(data); // should create 20 Batches
         assertEquals(discSize + 20, gpu.getDiscSize());
-        assertEquals(20, gpu.getNumOfBatches());
+        assertEquals(20, gpu.getRemainingModelBatches());
         assertThrows("Cannot prepare batches from null data", IllegalArgumentException.class, () -> gpu.prepareBatches(null));
     }
 
