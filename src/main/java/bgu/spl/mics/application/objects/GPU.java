@@ -2,6 +2,7 @@ package bgu.spl.mics.application.objects;
 
 import bgu.spl.mics.Event;
 import bgu.spl.mics.Message;
+import bgu.spl.mics.application.services.GPUService;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -19,6 +20,8 @@ public class GPU {
      */
     enum Type {RTX3090, RTX2080, GTX1080}
 
+    private static int id = 0;
+
     private int currentTick;
 
     private Type type;
@@ -30,6 +33,7 @@ public class GPU {
     private Queue<DataBatch> disc; // unprocessed DataBatches, before being sent to CPU's
     private Queue<DataBatch> vRam; // incoming from cluster, processed
     private int ticksUsed;
+    private int myId;
 
     public GPU(Type type, Cluster cluster) {
         currentTick = 0;
@@ -41,6 +45,8 @@ public class GPU {
         messageQueue = new LinkedList<>();
         disc = new LinkedList<>();
         vRam = new LinkedBlockingQueue<>(vRamCapacity);
+        myId = ++id;
+        new GPUService(String.valueOf(myId), this);
     }
 
     /**

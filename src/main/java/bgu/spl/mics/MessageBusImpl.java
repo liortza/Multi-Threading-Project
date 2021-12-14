@@ -3,10 +3,9 @@ package bgu.spl.mics;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TrainModelEvent;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
@@ -16,21 +15,21 @@ import java.util.concurrent.ConcurrentHashMap;
  * @INV: number of subscribed is non-negative?
  */
 public class MessageBusImpl implements MessageBus {
-    int trainIndex = 0, testIndex = 0, publishIndex = 0;
 
-    private ConcurrentHashMap<Class<? extends Event>, ArrayList<MicroService>> eventList; // TODO: Event<T> ?
-    private ConcurrentHashMap<Broadcast, ArrayList<MicroService>> broadcastList;
-    private ConcurrentHashMap<MicroService, Queue<Message>> queues;
-    private ConcurrentHashMap<Event, Future> futuresList;
-    private static MessageBus INSTANCE = null;
-    private static final Object trainLock = new Object(), testLock = new Object(), publishLock = new Object(),
-            subscribeEvent = new Object(), subscribeBroadcast = new Object();
+    private HashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList; // TODO: Event<T> ?
+    private HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
+    private HashMap<MicroService, BlockingQueue<Message>> queues;
+    private HashMap<Event, Future> futuresList;
+
+    private static class MessageBusHolder {
+        private static MessageBusImpl instance = new MessageBusImpl();
+    }
 
     public MessageBusImpl() {
-        eventList = new ConcurrentHashMap<>();
-        broadcastList = new ConcurrentHashMap<>();
-        queues = new ConcurrentHashMap<>();
-        futuresList = new ConcurrentHashMap<>();
+        eventList = new HashMap<>();
+        broadcastList = new HashMap<>();
+        queues = new HashMap<>();
+        futuresList = new HashMap<>();
     }
 
     /**
@@ -42,10 +41,13 @@ public class MessageBusImpl implements MessageBus {
      */
     @Override
     public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-        // TODO: synchronize exception??
         if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
-        synchronized (subscribeEvent) {
-            if (!eventList.get(type).contains(m)) eventList.get(type).add(m);
+        synchronized (eventList) {
+            if (eventList.get(type) == null) // add event to map if doesn't exist
+                eventList.put(type, new LinkedBlockingQueue<>());
+        } synchronized (eventList.get(type)) {
+            if (!isSubscribedToEvent(type, m)) // add m to eventList if not subscribed
+                eventList.get(type).add(m);
         }
     }
 
@@ -64,12 +66,16 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
-        synchronized (subscribeBroadcast) {
-            if (!broadcastList.get(type).contains(m)) broadcastList.get(type).add(m);
+        synchronized (broadcastList) {
+            if (broadcastList.get(type) == null) // add broadcast to map if doesn't exist
+                broadcastList.put(type, new LinkedBlockingQueue<>());
+        } synchronized (broadcastList.get(type)) {
+            if (!isSubscribedToBroadcast(type, m)) // add m to broadcastList if not subscribed
+                broadcastList.get(type).add(m);
         }
     }
 
-    public <T> boolean isSubscribedToBroadcast(Class<? extends Event<T>> type, MicroService m) {
+    public <T> boolean isSubscribedToBroadcast(Class<? extends Broadcast> type, MicroService m) {
         return broadcastList.get(type).contains(m);
     }
 
@@ -97,11 +103,11 @@ public class MessageBusImpl implements MessageBus {
      */
 
     @Override
-    public void sendBroadcast(Broadcast b) {
-        ArrayList<MicroService> subscribed = broadcastList.get(b);
+    public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
+        BlockingQueue<MicroService> subscribed = broadcastList.get(b);
         for (MicroService ms : subscribed) {
-            queues.get(ms).add(b);
-            ms.notify(); // TODO: ok??
+            queues.get(ms).add(b); // TODO: put??
+            // ms.notify(); // TODO: ok??
         }
     }
 
@@ -117,27 +123,10 @@ public class MessageBusImpl implements MessageBus {
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
         if (eventList.get(e) != null) { // at least one microservice subscribed to event type
-            if (e.getClass() == TrainModelEvent.class) {
-                synchronized (trainLock) {
-                    MicroService recipient = eventList.get(e).get(trainIndex);
-                    queues.get(recipient).add(e);
-                    recipient.notify(); // TODO: ok??
-                    trainIndex = (trainIndex++) % eventList.get(e).size();
-                }
-            } else if (e.getClass() == TestModelEvent.class) {
-                synchronized (testLock) {
-                    MicroService recipient = eventList.get(e).get(testIndex);
-                    queues.get(recipient).add(e);
-                    recipient.notify();
-                    testIndex = (testIndex++) % eventList.get(e).size();
-                }
-            } else {
-                synchronized (publishLock) {
-                    MicroService recipient = eventList.get(e).get(publishIndex);
-                    queues.get(recipient).add(e);
-                    recipient.notify();
-                    publishIndex = (publishIndex++) % eventList.get(e).size();
-                }
+            synchronized (eventList.get(e)) {
+                MicroService recipient = eventList.get(e).remove(); // get next in line by round robin
+                queues.get(recipient).add(e); // TODO: put??
+                eventList.get(e).add(recipient); // add to end of queue
             }
             future = new Future<>(); // TODO: check thread safe
             futuresList.put(e, future);
@@ -153,7 +142,7 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void register(MicroService m) {
         if (isRegistered(m)) throw new IllegalStateException("MicroService already registered");
-        queues.put(m, new LinkedList<>());
+        queues.put(m, new LinkedBlockingQueue<>()); // TODO: need to sync? we know it won't happen..
     }
 
     public boolean isRegistered(MicroService m) {
@@ -184,14 +173,10 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public Message awaitMessage(MicroService m) throws InterruptedException {
-        if (queues.get(m).isEmpty()) m.wait();
-        return queues.get(m).remove();
+        return queues.get(m).take(); // blocks m if queue is empty
     }
 
-    public static MessageBus getInstance() { // TODO make sure thread safe
-        if (INSTANCE == null) {
-            INSTANCE = new MessageBusImpl();
-        }
-        return INSTANCE;
+    public static MessageBus getInstance() {
+        return MessageBusHolder.instance;
     }
 }
