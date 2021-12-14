@@ -61,7 +61,7 @@ public class GPUTest {
     public void trainProcessed() {
         gpu.prepareBatches(data);
         DataBatch processed = gpu.getNextBatch();
-        processed.setProcessed(true);
+        processed.process();
         gpu.addToVRam(processed);
         gpu.trainProcessed(); // should take 1 tick
         assertFalse(processed.isTrained());
@@ -72,9 +72,10 @@ public class GPUTest {
 
     @Test
     public void testModel() {
-        model.setTrained(true);
+        model.train();
         assertEquals("None", model.getStatus());
-        gpu.testModel();
+        TestModelEvent e = new TestModelEvent("e", model);
+        gpu.testModel(e);
         assertNotEquals("None", model.getStatus()); // can be "Good" or "Bad"
     }
 }

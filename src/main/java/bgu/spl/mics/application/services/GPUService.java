@@ -1,14 +1,12 @@
 package bgu.spl.mics.application.services;
 import bgu.spl.mics.Callback;
-import bgu.spl.mics.Message;
+import bgu.spl.mics.Event;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.GPU;
-
-import java.util.HashMap;
 
 /**
  * GPU service is responsible for handling the
@@ -43,5 +41,9 @@ public class GPUService extends MicroService {
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
+    }
+
+    public <T> void completeEvent(Event<T> e, T result) {
+        complete(e, result);
     }
 }

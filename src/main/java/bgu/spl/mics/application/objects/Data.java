@@ -15,12 +15,28 @@ public class Data {
     private Type type;
     private int processed;
     private int size;
+    private int tickFactor;
 
     public Data(Type type, int size) {
         this.type = type;
+        switch (type) {
+            case Text:
+                tickFactor = 2;
+                break;
+            case Images:
+                tickFactor = 4;
+                break;
+            case Tabular:
+                tickFactor = 1;
+                break;
+        }
         processed = 0;
         this.size = size;
     }
 
     public Data.Type getType() { return type; }
+
+    public int getSize() { return size; }
+
+    public int getTickFactor() { return tickFactor; }
 }

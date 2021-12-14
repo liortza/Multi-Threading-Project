@@ -55,10 +55,11 @@ public class StudentService extends MicroService {
     }
 
     private void sendTestEvent() {
-        TestModelEvent testEvent = new TestModelEvent(getName(), trainFuture.get(); // TODO: blocking method ??
-        // TODO: use isDone()?
+        TestModelEvent testEvent = null;
+        try {
+            testEvent = new TestModelEvent(getName(), trainFuture.get()); // TODO: blocking method ??
+        } catch (InterruptedException e) {} // TODO: use secont get with timeout??
         testFuture = sendEvent(testEvent);
-        // ......
     }
 
     private void publishEvent() {

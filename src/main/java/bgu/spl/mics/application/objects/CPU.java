@@ -22,6 +22,7 @@ public class CPU {
     private int capacity;
     private Cluster cluster;
     private int ticksUsed;
+    private int processedBatches = 0;
     private int myId;
 
     public CPU(int cores, Cluster cluster) {
@@ -41,30 +42,26 @@ public class CPU {
 
     public void updateTick() {
         currentTick++;
-        if (current != null & ticksRemaining == 0) { // finished processing batch
+        if (current != null & ticksRemaining == 1) { // finished processing batch
             current.process();
+            processedBatches++;
             cluster.incomingBatchFromCPU(current);
-            if (!incoming.isEmpty()) { // start processing next batch
-                current = incoming.remove();
-                // update ticksRemaining
-            } else {
-                current = null;
-                cluster.fetchUnprocessedDataCPU(cores);
-            }
-        } else if (current != null & ticksRemaining > 0) {
-
-        }
+            prepareNext();
+        } else if (current != null & ticksRemaining > 1) { // during process
+            ticksRemaining--;
+            ticksUsed++;
+        } else prepareNext();
     }
 
-//    public DataBatch getData() {
-//        if (incoming.isEmpty()) {
-//            try {
-//                cluster.fetchUnprocessedDataCPU(capacity);
-//            } catch (InterruptedException e) {
-//            } // TODO: make sure works correctly
-//        }
-//        return incoming.remove();
-//    }
+    public void prepareNext() {
+        if (incoming.isEmpty()) {
+            current = null;
+            cluster.fetchUnprocessedDataCPU(cores);
+        } if (!incoming.isEmpty()) { // fetch successful
+            current = incoming.remove();
+            ticksRemaining = (32 / cores) * (current.getTickFactor());
+        }
+    }
 
     /**
      * @pre !incoming.isEmpty()
@@ -95,5 +92,9 @@ public class CPU {
 
     public int getTicksUsed() { // used for tests
         return ticksUsed;
+    }
+
+    public int getProcessedBatches() {
+        return processedBatches;
     }
 }
