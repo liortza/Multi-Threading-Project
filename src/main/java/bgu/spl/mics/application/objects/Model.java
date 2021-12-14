@@ -43,8 +43,8 @@ public class Model {
         return isTrained;
     }
 
-    public void setTrained(boolean trained) {
-        isTrained = trained;
+    public void train() {
+        isTrained = true;
     }
 
     public void publish() { published = true; }

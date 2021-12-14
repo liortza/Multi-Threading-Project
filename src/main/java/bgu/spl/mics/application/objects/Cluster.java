@@ -1,10 +1,12 @@
 package bgu.spl.mics.application.objects;
 
 
+import sun.misc.Cleaner;
+
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -16,10 +18,12 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Cluster {
 
-	// private static class
+	private static class ClusterHolder {
+		private static Cluster instance = new Cluster();
+	}
 
 	private BlockingQueue<DataBatch> unprocessed;
-	private HashMap<GPU, Queue<DataBatch>> gpuProcessedQueues;
+	private HashMap<GPU, Queue<DataBatch>> gpuQueues;
 
 	/**
      * Retrieves the single instance of this class.
@@ -27,11 +31,15 @@ public class Cluster {
 
 	public Cluster() {
 		unprocessed = new LinkedBlockingQueue<>();
+		gpuQueues = new HashMap<>();
 	}
 
 	public static Cluster getInstance() {
-		//TODO: Implement this
-		return null;
+		return ClusterHolder.instance;
+	}
+
+	public void addGPUQueue(GPU gpu) {
+		gpuQueues.put(gpu, new LinkedBlockingQueue<>());
 	}
 
 	public void incomingDataFromGPU(Queue<DataBatch> batches) {
@@ -39,7 +47,12 @@ public class Cluster {
 	}
 
 	public Queue<DataBatch> fetchProcessedDataGPU (int dataBatches, GPU gpu) {
-		return null; // TODO: wait if queue is empty
+		Queue<DataBatch> toGPU = new LinkedList<>();
+		Queue<DataBatch> gpuQueue = gpuQueues.get(gpu);
+		for (int i = 0; i < dataBatches & !gpuQueue.isEmpty(); i++) {
+			toGPU.add(gpuQueue.remove());
+		}
+		return toGPU;
 	}
 
 	public Queue<DataBatch> fetchUnprocessedDataCPU(int dataBatches) {

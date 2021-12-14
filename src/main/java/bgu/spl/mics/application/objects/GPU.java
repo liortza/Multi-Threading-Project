@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.Event;
 import bgu.spl.mics.Message;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TrainModelEvent;
@@ -25,33 +26,46 @@ public class GPU {
     private static int id = 0;
 
     private int currentTick;
+    private GPUService myService;
 
     private Type type;
-    private Model model;
+    private Model model = null;
     private int remainingModelBatches, batchesToCluster;
     private Cluster cluster;
+    private DataBatch current = null;
     private int vRamCapacity;
     private Deque<Message> messageDeque;
     private Queue<DataBatch> disc; // unprocessed DataBatches, before being sent to CPU's
     private Queue<DataBatch> vRam; // incoming from cluster, processed
-    private int ticksUsed;
+    private int ticksUsed = 0, ticksRemaining = 0;
+    private final int tickFactor;
     private int myId;
+    private TrainModelEvent trainEvent = null;
 
     public GPU(Type type, Cluster cluster) {
         currentTick = 0;
         this.type = type;
-        if (type == Type.RTX3090) batchesToCluster = 8;
-        else if (type == Type.RTX2080) batchesToCluster = 4;
-        else batchesToCluster = 2;
-        // TODO: trainingTicks, vRamCapacity, availableVRam
-        model = null;
+        if (type == Type.RTX3090) {
+            vRamCapacity = 32;
+            batchesToCluster = 8;
+            tickFactor = 1;
+        } else if (type == Type.RTX2080) {
+            vRamCapacity = 16;
+            batchesToCluster = 4;
+            tickFactor = 2;
+        } else {
+            vRamCapacity = 8;
+            batchesToCluster = 2;
+            tickFactor = 4;
+        }
         this.cluster = cluster;
-        ticksUsed = 0;
         messageDeque = new ArrayDeque<>();
         disc = new LinkedList<>();
         vRam = new LinkedBlockingQueue<>(vRamCapacity);
         myId = ++id;
-        new GPUService(String.valueOf(myId), this);
+        myService = new GPUService(String.valueOf(myId), this);
+        cluster = Cluster.getInstance();
+        cluster.addGPUQueue(this);
     }
 
     /**
@@ -62,17 +76,37 @@ public class GPU {
         currentTick++;
         if (model != null) { // currently training a model
             sendBatchesToCluster();
-
-            // get batches from cluster
-            // clear vram if possible
-            // check if finished
+            if (current != null & ticksRemaining == 1) { // finished training a batch
+                prepareNext();
+                remainingModelBatches--;
+                if (remainingModelBatches == 0) { // finished training model
+                    model.train();
+                    myService.completeEvent(trainEvent, model);
+                }
+            } else if (current != null & ticksRemaining > 1) {
+                ticksRemaining--;
+            } else prepareNext();
         } else { // test all models and start training next model
             Message m;
             while (!messageDeque.isEmpty()) {
                 m = messageDeque.getFirst();
                 if (m instanceof TestModelEvent) testModel((TestModelEvent) m);
-                else prepareModelForTraining((TrainModelEvent) m);
+                else {
+                    prepareModelForTraining((TrainModelEvent) m);
+                    sendBatchesToCluster();
+                }
             }
+        }
+    }
+
+    public void prepareNext() {
+        if (vRam.isEmpty()) {
+            current = null;
+            cluster.fetchProcessedDataGPU(vRamCapacity, this);
+        }
+        if (!vRam.isEmpty()) { // fetch successful
+            current = vRam.remove();
+            ticksRemaining = tickFactor;
         }
     }
 
@@ -92,15 +126,9 @@ public class GPU {
      * @post trainEvent.model.isTrained()
      */
     public <T> void prepareModelForTraining(TrainModelEvent e) {
+        trainEvent = e;
         model = e.getModel();
         prepareBatches(model.getData());
-        sendBatchesToCluster();
-//        sendBatchesToCluster(); // limited amount at a time
-//        try {
-//            DataBatch toTrain = vRam.remove();
-//        } catch (InterruptedException e) {}
-//        once model is fully trained - bus.complete()
-//        model = null;
     }
 
     /**
@@ -111,8 +139,10 @@ public class GPU {
      */
     public void prepareBatches(Data data) {
         if (data == null) throw new IllegalArgumentException("cannot prepare batches from null data");
-        // numOfBatches = data.size() / 1000
-        // push to disc
+        remainingModelBatches = data.getSize() / 1000;
+        for (int i = 0; i < data.getSize() / 1000; i += 1000) {
+            disc.add(new DataBatch(data, i, this));
+        }
     }
 
     /**
@@ -121,31 +151,46 @@ public class GPU {
      * @post disc.size() == max{0, @pre(disc.size()) - numOfBatches}
      */
     public void sendBatchesToCluster() {
-
+        Queue<DataBatch> toCluster = new LinkedList<>();
+        for (int i = 0; i < batchesToCluster & !disc.isEmpty(); i++) {
+            toCluster.add(disc.remove());
+        }
+        cluster.incomingDataFromGPU(toCluster);
     }
 
     private void fetchProcessedFromCluster() {
-
+        vRam = cluster.fetchProcessedDataGPU(vRamCapacity, this); // vRam is empty before this method
     }
 
-    /**
-     * @pre !vRam.isEmpty()
-     * @pre vRam.peek().isProcessed == true
-     * @pre vRam.peek().isTrained == false
-     * @post vRam.isEmpty() || currentTick == duration
-     * @post vRam.peek().isTrained == true
-     * @post currentTick > @pre(currentTick)
-     */
-    public void trainProcessed() {
-        if (vRam.isEmpty()) throw new IllegalStateException("has no processed batches to train");
-    }
+//    /**
+//     * @pre !vRam.isEmpty()
+//     * @pre vRam.peek().isProcessed == true
+//     * @pre vRam.peek().isTrained == false
+//     * @post vRam.isEmpty() || currentTick == duration
+//     * @post vRam.peek().isTrained == true
+//     * @post currentTick > @pre(currentTick)
+//     */
+//    public void trainProcessed() {
+//        if (vRam.isEmpty()) throw new IllegalStateException("has no processed batches to train");
+//    }
 
     /**
      * @pre trainEvent.model.isTrained() && trainEvent.model.status == "None"
      * @post trainEvent.model.status == "Good" || trainEvent.model.status == "Bad"
      */
     public void testModel(TestModelEvent e) {
-
+        double rdm = Math.random();
+        switch (e.getDegree()) {
+            case MSc:
+                if (rdm < 0.6) e.getModel().setStatus(Model.Status.Good);
+                else e.getModel().setStatus(Model.Status.Bad);
+                break;
+            case PhD:
+                if (rdm < 0.8) e.getModel().setStatus(Model.Status.Good);
+                else e.getModel().setStatus(Model.Status.Bad);
+                break;
+        }
+        myService.completeEvent(e, e.getModel().getStatus());
     }
 
     public int getCurrentTick() {

@@ -35,5 +35,5 @@ public class DataBatch {
         trained = true;
     }
 
-    public Data.Type getType() { return data.}
+    public int getTickFactor() { return data.getTickFactor(); }
 }
