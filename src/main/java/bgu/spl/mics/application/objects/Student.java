@@ -22,7 +22,6 @@ public class Student {
     private String status;
     private Degree degree;
     private int publications = 0, papersRead = 0, index = 0;
-    //private ArrayList<Model> models = new ArrayList<>();
     private Model[] models;
     private Future future; // Future<??>
 
@@ -80,4 +79,15 @@ public class Student {
     public void incrementRead() {
         papersRead++;
     }
+
+    public String getDepartment() { return department;}
+
+    public String getStatus() { //for output file
+        if(degree== Degree.MSc) return "Msc";
+        else return "PhD";
+    }
+    public int getNumOfPublications() {return publications;}
+
+    public int getNumOfPapers() {return papersRead;}
+
 }
