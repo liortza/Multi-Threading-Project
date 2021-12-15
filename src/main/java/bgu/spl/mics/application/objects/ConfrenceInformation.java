@@ -32,4 +32,7 @@ public class ConfrenceInformation {
     public LinkedList<Model> getModels() {
         return models;
     }
+
+    public String getName(){ return name; }
+
 }

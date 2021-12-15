@@ -50,4 +50,16 @@ public class Model {
 
     public void publish() { published = true; }
 
+    public String getTested(){
+        if(status==status.None) return "NotTested";
+        else return "Tested";
+    }
+    public String getResults() {
+        if(status==status.Good)
+            return "Good";
+        else if(status==status.Bad)
+            return "Bad";
+        else return "None";
+    }
+
 }

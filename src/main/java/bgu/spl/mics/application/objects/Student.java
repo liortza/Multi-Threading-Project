@@ -21,7 +21,7 @@ public class Student {
     private String department;
     private Degree degree;
     private int publications = 0, papersRead = 0, index = 0;
-    private ArrayList<Model> models = new ArrayList<>();
+    private Model[] models;
     private Future future; // Future<??>
 
     public Student(String name, String department, Degree degree) {
@@ -30,14 +30,11 @@ public class Student {
         this.degree = degree;
     }
 
-    public void addModel(String name, Data data) {
-        models.add(new Model(name, data, this));
-    }
 
     public Model getNextModel() {
         Model next = null;
-        if (index < models.size()) {
-            next = models.get(index);
+        if (index < models.length) {
+            next = models[index];
             index++;
         }
         return next;
@@ -52,4 +49,18 @@ public class Student {
     public void incrementRead() {
         papersRead++;
     }
+
+    public String getName() { return name;}
+
+    public String getDepartment() { return department;}
+
+    public String getStatus() { //for output file
+        if(degree== Degree.MSc) return "Msc";
+        else return "PhD";
+    }
+    public int getNumOfPublications() {return publications;}
+
+    public int getNumOfPapers() {return papersRead;}
+
+    public Model[] getModels() {return models;}
 }
