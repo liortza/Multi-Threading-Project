@@ -12,14 +12,15 @@ public class ConfrenceInformation {
 
     private String name;
     private int date;
-    private LinkedList<Model> models;
+    private LinkedList<Model> models = new LinkedList<>();
 
     public ConfrenceInformation(String name, int date) {
         this.name = name;
         this.date = date;
-        models = new LinkedList<>();
-        new ConferenceService(name, this);
+        // new ConferenceService(name, this);
     }
+
+    public String getName() { return name; }
 
     public int getDate() {
         return date;
