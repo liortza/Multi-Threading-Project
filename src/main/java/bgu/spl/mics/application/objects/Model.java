@@ -17,6 +17,7 @@ public class Model {
     private Data data;
     private Student student;
     private boolean trained = false, published = false;
+    private String tested= "NotTested";
 
     public Model(String name, Data data) {
         this.name = name;
@@ -68,10 +69,6 @@ public class Model {
 
     public void publish() { published = true; }
 
-    public String getTested(){
-        if(status==status.None) return "NotTested";
-        else return "Tested";
-    }
     public String getResults() {
         if(status==status.Good)
             return "Good";
@@ -79,5 +76,9 @@ public class Model {
             return "Bad";
         else return "None";
     }
+
+    public void tested(){ tested="Tasted"; }
+
+    public String getTested(){ return tested; }
 
 }

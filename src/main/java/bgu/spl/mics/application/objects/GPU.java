@@ -210,6 +210,7 @@ public class GPU {
                 else e.getModel().setStatus(Model.Status.Bad);
                 break;
         }
+        e.getModel().tested();
         myService.completeEvent(e, e.getModel().getStatus());
     }
 
