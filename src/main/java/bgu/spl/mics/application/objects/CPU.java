@@ -16,23 +16,20 @@ public class CPU {
     private int currentTick = 0;
 
     private int cores;
-    private Queue<DataBatch> incoming;
+    private Queue<DataBatch> incoming = new LinkedList<>();
     private DataBatch current = null;
     private int ticksRemaining = 0;
     private int capacity;
-    private Cluster cluster;
-    private int ticksUsed;
+    private Cluster cluster = Cluster.getInstance();
+    private int ticksUsed = 0;
     private int processedBatches = 0;
     private int myId;
 
-    public CPU(int cores, Cluster cluster) {
+    public CPU(int cores) {
         this.cores = cores;
-        this.incoming = new LinkedList<>();
         capacity = cores; // TODO: see how to define capacity
-        this.cluster = cluster;
-        ticksUsed = 0;
         myId = ++id;
-        new CPUService(String.valueOf(myId), this);
+        // new CPUService(String.valueOf(myId), this);
     }
 
     /**
@@ -97,4 +94,6 @@ public class CPU {
     public int getProcessedBatches() {
         return processedBatches;
     }
+
+    public String getName() { return "CPU" + id; }
 }

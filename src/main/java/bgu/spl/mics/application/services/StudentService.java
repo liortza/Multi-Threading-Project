@@ -35,6 +35,7 @@ public class StudentService extends MicroService {
     protected void initialize() {
         // PublishConferenceBroadcast
         Callback<PublishConfrenceBroadcast> publishCallback = (PublishConfrenceBroadcast b) -> handlePublishBroadcast(b);
+        System.out.println(getName() + " is subscribing to pubBroad");
         subscribeBroadcast(PublishConfrenceBroadcast.class, publishCallback);
 
         // TickEvent
@@ -73,6 +74,8 @@ public class StudentService extends MicroService {
             publishFutures.put(current, sendEvent(publishEvent));
         }
         current = null;
+        trainFuture = null;
+        testFuture = null;
     }
 
     private void updateTick() {

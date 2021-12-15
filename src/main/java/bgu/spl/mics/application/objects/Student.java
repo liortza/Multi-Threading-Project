@@ -19,31 +19,59 @@ public class Student {
 
     private String name;
     private String department;
+    private String status;
     private Degree degree;
     private int publications = 0, papersRead = 0, index = 0;
-    private ArrayList<Model> models = new ArrayList<>();
+    //private ArrayList<Model> models = new ArrayList<>();
+    private Model[] models;
     private Future future; // Future<??>
 
-    public Student(String name, String department, Degree degree) {
+//    public Student(String name, String department, Degree degree) {
+//        this.name = name;
+//        this.department = department;
+//        this.degree = degree;
+//    }
+
+    public Student(String name, String department, String status, Model[] models) {
         this.name = name;
         this.department = department;
-        this.degree = degree;
+        degree = Degree.MSc;
+        if (status.equals("PhD")) degree = Degree.PhD;
+        this.models = models;
     }
 
-    public void addModel(String name, Data data) {
-        models.add(new Model(name, data, this));
+    public void init() {
+        degree = Degree.MSc;
+        if (status.equals("PhD")) degree = Degree.PhD;
     }
+
+//    public void addModel(String name, Data data) {
+//        models.add(new Model(name, data, this));
+//    }
+
+    public Model[] getModels() { return models; }
+
+//    public Model getNextModel() {
+//        Model next = null;
+//        if (index < models.size()) {
+//            next = models.get(index);
+//            index++;
+//        }
+//        return next;
+//    }
 
     public Model getNextModel() {
         Model next = null;
-        if (index < models.size()) {
-            next = models.get(index);
+        if (index < models.length) {
+            next = models[index];
             index++;
         }
         return next;
     }
 
     public Student.Degree getDegree() { return degree; }
+
+    public String getName() { return name; }
 
     public void incrementPub() {
         publications++;
