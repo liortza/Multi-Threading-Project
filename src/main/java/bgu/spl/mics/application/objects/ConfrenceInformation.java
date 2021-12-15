@@ -20,8 +20,6 @@ public class ConfrenceInformation {
         // new ConferenceService(name, this);
     }
 
-    public String getName() { return name; }
-
     public int getDate() {
         return date;
     }
@@ -33,4 +31,7 @@ public class ConfrenceInformation {
     public LinkedList<Model> getModels() {
         return models;
     }
+
+    public String getName(){ return name; }
+
 }
