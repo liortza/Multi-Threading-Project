@@ -137,6 +137,7 @@ public class MessageBusImpl implements MessageBus {
      */
     @Override
     public void register(MicroService m) {
+        if (m == null) throw new IllegalArgumentException("MicroService is null");
         if (isRegistered(m)) throw new IllegalStateException("MicroService already registered");
         queues.put(m, new LinkedBlockingQueue<>()); // TODO: need to sync? we know it won't happen..
     }

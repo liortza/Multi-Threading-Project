@@ -6,7 +6,16 @@ import org.json.simple.JSONArray;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import bgu.spl.mics.Input;
+import bgu.spl.mics.application.services.CPUService;
+import bgu.spl.mics.application.services.ConferenceService;
+import bgu.spl.mics.application.services.GPUService;
+import bgu.spl.mics.application.services.StudentService;
+import com.google.gson.Gson;
+
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
 /**
@@ -15,11 +24,47 @@ import java.util.LinkedList;
  * In the end, you should output a text file.
  */
 public class CRMSRunner {
-    static Student[] Students;
-    static ConfrenceInformation[] Conferences;
+    static Student[] students;
+    static ConfrenceInformation[] conferences;
     static Cluster cluster = new Cluster();
 
     public static void main(String[] args) {
+        // region PARSING INPUT
+        Gson gson = new Gson();
+        try (Reader reader = Files.newBufferedReader(Paths.get("example_input.json"))) {
+            Input input = gson.fromJson(reader, Input.class);
+            students = input.getStudents();
+            for (Student s : students) {
+                for (Model m : s.getModels()) m.init(s);
+                s.init();
+                StudentService studentService = new StudentService(s.getName(), s);
+                Thread studentT = new Thread(studentService);
+                studentT.start();
+            }
+
+            for (GPU gpu : input.getGpus()) {
+                GPUService gpuService = new GPUService(gpu.getName(), gpu);
+                Thread gpuT = new Thread(gpuService);
+                gpuT.start();
+            }
+
+            for (CPU cpu : input.getCpus()) {
+                CPUService cpuService = new CPUService(cpu.getName(), cpu);
+                Thread cpuT = new Thread(cpuService);
+                cpuT.start();
+            }
+
+            conferences = input.getConferences();
+            for (ConfrenceInformation cInfo : conferences) {
+                ConferenceService confService = new ConferenceService(cInfo.getName(), cInfo);
+                Thread confT = new Thread(confService);
+                confT.start();
+            }
+
+        } catch (IOException e) {
+            System.out.println("caught exception");
+        }
+        // endregion
         Output();
 
     }
@@ -40,28 +85,28 @@ public class CRMSRunner {
         batchesProcessed.put("batchesProcessed", cluster.cpuTotalProcessedBatches());
         Output.set(4, batchesProcessed);
         //build Students
-        for (int i = 0; i < Students.length; i++) {
+        for (int i = 0; i < CRMSRunner.students.length; i++) {
             //build student
             JSONArray student = new JSONArray();
             //insert student data
             JSONObject name = new JSONObject();
-            name.put("name", Students[i].getName());
+            name.put("name", CRMSRunner.students[i].getName());
             student.set(0, name);
             JSONObject department = new JSONObject();
-            department.put("department", Students[i].getDepartment());
+            department.put("department", CRMSRunner.students[i].getDepartment());
             student.set(1, department);
             JSONObject status = new JSONObject();
-            status.put("status", Students[i].getStatus());
+            status.put("status", CRMSRunner.students[i].getStatus());
             student.set(2, status);
             JSONObject publications = new JSONObject();
-            publications.put("publications", Students[i].getStatus());
+            publications.put("publications", CRMSRunner.students[i].getStatus());
             student.set(3, publications);
             JSONObject papersRead = new JSONObject();
-            papersRead.put("papersRead", Students[i].getNumOfPapers());
+            papersRead.put("papersRead", CRMSRunner.students[i].getNumOfPapers());
             student.set(4, papersRead);
             //models
             JSONArray trainedModels = new JSONArray();
-            Model[] studentModels = Students[i].getModels();
+            Model[] studentModels = CRMSRunner.students[i].getModels();
             for (int j = 0; j < studentModels.length; j++) {
                 if (studentModels[i].isTrained()) {
                     //create model
@@ -94,17 +139,17 @@ public class CRMSRunner {
             students.set(i, student);
         }
         //build conferences
-        for(int i=0; i<Conferences.length; i++){
+        for (int i = 0; i < CRMSRunner.conferences.length; i++) {
             JSONObject conferenceName = new JSONObject();
-            conferenceName.put("name", Conferences[i].getName());
+            conferenceName.put("name", CRMSRunner.conferences[i].getName());
             conferences.set(0, conferenceName);
             JSONObject conferenceDate = new JSONObject();
-            conferenceDate.put("Date", Conferences[i].getDate());
+            conferenceDate.put("Date", CRMSRunner.conferences[i].getDate());
             conferences.set(1, conferenceDate);
             //conference publications
-            JSONArray publications= new JSONArray();
-            LinkedList<Model> conferencePublications=Conferences[i].getModels();
-            for(int j=0; i<conferencePublications.size(); i++){
+            JSONArray publications = new JSONArray();
+            LinkedList<Model> conferencePublications = CRMSRunner.conferences[i].getModels();
+            for (int j = 0; i < conferencePublications.size(); i++) {
                 //create model
                 JSONArray CModel = new JSONArray();
                 JSONObject CModelName = new JSONObject();
@@ -140,3 +185,4 @@ public class CRMSRunner {
         System.out.println("JSON file created: " + Output);
     }
 }
+

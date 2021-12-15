@@ -162,6 +162,7 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        System.out.println(getName() + " is registering to bus");
         bus.register(this);
         initialize();
         while (!terminated) {
