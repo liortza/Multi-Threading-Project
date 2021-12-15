@@ -42,6 +42,7 @@ public class TimeService extends MicroService{
 
 	private void sendTickBroadcast() {
 		sendBroadcast(new TickBroadcast());
+		System.out.println("TimeService is sending TickBroadcast #" + tickCounter);
 		tickCounter++;
 	}
 

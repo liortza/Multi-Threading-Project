@@ -68,4 +68,5 @@ public class Model {
 
     public void publish() { published = true; }
 
+    public boolean isPublished() { return published; }
 }
