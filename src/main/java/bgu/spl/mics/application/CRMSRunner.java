@@ -1,8 +1,11 @@
 package bgu.spl.mics.application;
 
 import bgu.spl.mics.application.objects.*;
+import bgu.spl.mics.application.services.*;
+
 import java.io.FileWriter;
 import java.io.IOException;
+
 import bgu.spl.mics.Input;
 import bgu.spl.mics.application.services.CPUService;
 import bgu.spl.mics.application.services.ConferenceService;
@@ -11,6 +14,7 @@ import bgu.spl.mics.application.services.StudentService;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -40,13 +44,19 @@ public class CRMSRunner {
                 studentT.start();
             }
 
-            for (GPU gpu : input.getGpus()) {
+            Cluster cluster = Cluster.getInstance();
+
+            for (String type : input.getGpus()) {
+                GPU gpu = new GPU(type);
+                cluster.registerGPU(gpu);
                 GPUService gpuService = new GPUService(gpu.getName(), gpu);
                 Thread gpuT = new Thread(gpuService);
                 gpuT.start();
             }
 
-            for (CPU cpu : input.getCpus()) {
+            for (int cores : input.getCpus()) {
+                CPU cpu = new CPU(cores);
+                cluster.registerCPU(cpu);
                 CPUService cpuService = new CPUService(cpu.getName(), cpu);
                 Thread cpuT = new Thread(cpuService);
                 cpuT.start();
@@ -59,6 +69,11 @@ public class CRMSRunner {
                 confT.start();
             }
 
+            // wait for all threads to finish registering and subscribing before starting ticks
+
+            Thread timeT = new Thread(new TimeService(input.getTickTime(), input.getDuration()));
+            timeT.start();
+
         } catch (IOException e) {
             System.out.println("caught exception");
         }
@@ -68,7 +83,7 @@ public class CRMSRunner {
     }
 
     private static void Output() {
-        JsonArray output= new JsonArray();
+        JsonArray output = new JsonArray();
         JsonArray Output = new JsonArray();
         JsonArray students = new JsonArray();
         Output.set(0, students);

@@ -69,6 +69,8 @@ public class Model {
 
     public void publish() { published = true; }
 
+    public boolean isPublished() { return published; }
+
     public String getResults() {
         if(status==status.Good)
             return "Good";
@@ -80,5 +82,4 @@ public class Model {
     public void tested(){ tested="Tasted"; }
 
     public String getTested(){ return tested; }
-
 }

@@ -28,18 +28,22 @@ public class GPUService extends MicroService {
     protected void initialize() {
         // TrainModelEvent
         Callback<TrainModelEvent> trainCallback = (TrainModelEvent e) -> gpu.handleTrainEvent(e);
+        System.out.println(getName() + " is subscribing to trainEvent");
         subscribeEvent(TrainModelEvent.class, trainCallback);
 
         // TestModelEvent
         Callback<TestModelEvent> testCallback = (TestModelEvent e) -> gpu.handleTestEvent(e);
+        System.out.println(getName() + " is subscribing to testEvent");
         subscribeEvent(TestModelEvent.class, testCallback);
 
         // TickBroadcast
         Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> gpu.updateTick();
+        System.out.println(getName() + " is subscribing to tickBroad");
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
+        System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
     }
 

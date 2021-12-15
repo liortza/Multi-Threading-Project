@@ -40,10 +40,12 @@ public class StudentService extends MicroService {
 
         // TickEvent
         Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> updateTick();
+        System.out.println(getName() + " is subscribing to tickBroad");
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
+        System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
     }
 
