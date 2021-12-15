@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.objects;
 
-import bgu.spl.mics.Event;
 import bgu.spl.mics.Message;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TrainModelEvent;
@@ -65,7 +64,7 @@ public class GPU {
         myId = ++id;
         myService = new GPUService(String.valueOf(myId), this);
         cluster = Cluster.getInstance();
-        cluster.addGPUQueue(this);
+        cluster.registerGPU(this);
     }
 
     /**
@@ -82,6 +81,7 @@ public class GPU {
                 if (remainingModelBatches == 0) { // finished training model
                     model.train();
                     myService.completeEvent(trainEvent, model);
+                    cluster.addTrained(model.getName());
                 }
             } else if (current != null & ticksRemaining > 1) {
                 ticksRemaining--;
@@ -204,6 +204,8 @@ public class GPU {
     public int getRemainingModelBatches() {
         return remainingModelBatches;
     }
+
+    public int getTicksUsed() { return ticksUsed; }
 
     public int getDiscSize() {
         return disc.size();

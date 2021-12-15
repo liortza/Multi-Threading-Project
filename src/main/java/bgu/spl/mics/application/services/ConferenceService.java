@@ -48,7 +48,7 @@ public class ConferenceService extends MicroService {
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {
-        myConference.addModel(event.getName()); // only "Good" models are sent
+        myConference.addModel(event.getModel()); // only "Good" models are sent
     }
 
     private void updateTick() {
@@ -61,6 +61,7 @@ public class ConferenceService extends MicroService {
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
+        for (Model m: myConference.getModels()) m.publish();
         sendBroadcast(broadcast);
     }
 }

@@ -2,29 +2,28 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.Future;
-import bgu.spl.mics.Message;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
  * {@link TestModelEvent} and {@link PublishResultsEvent}.
  * In addition, it must sign up for the conference publication broadcasts.
  * This class may not hold references for objects which it is not responsible for.
- *
+ * <p>
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
     private Student myStudent;
+    private Model current = null;
     private Future<Model> trainFuture;
     private Future<Model.Status> testFuture;
-    private Future<Boolean> publishFuture;
+    private HashMap<Model, Future<Boolean>> publishFutures;
 
     public StudentService(String name, Student myStudent) {
         super(name);
@@ -47,9 +46,9 @@ public class StudentService extends MicroService {
     }
 
     private void sendTrainEvent() {
-        Model next = myStudent.getNextModel();
-        if (next != null) {
-            TrainModelEvent trainEvent = new TrainModelEvent(getName(), next);
+        current = myStudent.getNextModel();
+        if (current != null) {
+            TrainModelEvent trainEvent = new TrainModelEvent(getName(), current);
             trainFuture = sendEvent(trainEvent);
         }
     }
@@ -57,28 +56,33 @@ public class StudentService extends MicroService {
     private void sendTestEvent() {
         TestModelEvent testEvent = null;
         try {
-            testEvent = new TestModelEvent(getName(), trainFuture.get()); // TODO: blocking method ??
-        } catch (InterruptedException e) {} // TODO: use secont get with timeout??
+            testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
+        } catch (InterruptedException e) {}
         testFuture = sendEvent(testEvent);
     }
 
-    private void publishEvent() {
-
+    private void sendPublishEvent() {
+        PublishResultsEvent publishEvent = null;
+        Model.Status status = null;
+        try {
+            status = testFuture.get();
+        } catch (InterruptedException e) {}
+        publishEvent = new PublishResultsEvent(current, status);
+        publishFutures.put(current, sendEvent(publishEvent));
+        current = null;
     }
 
     private void updateTick() {
-        // call train, test, publish
+        if (current == null) sendTrainEvent();
+        else if (trainFuture != null && trainFuture.isDone() & testFuture == null) sendTestEvent();
+        else if (testFuture != null && testFuture.isDone()) sendPublishEvent();
     }
 
     private void handlePublishBroadcast(PublishConfrenceBroadcast broadcast) {
-        for (String modelName: broadcast.getModelsNames()) {
-            for (Model M: myStudent.getModels()) {
-                if (M.getName().equals(modelName)) {
-                    myStudent.incrementPub();
-                    M.publish(); // TODO: publish models here? in conference it's a little problematic because of strings
-                }
-                else myStudent.incrementRead();
-            }
+        for (Model model : broadcast.getModels()) {
+            if (model.getStudent().equals(myStudent)) myStudent.incrementPub();
+            else myStudent.incrementRead();
         }
     }
 }
+

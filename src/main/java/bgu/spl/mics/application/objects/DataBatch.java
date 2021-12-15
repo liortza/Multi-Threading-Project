@@ -36,4 +36,6 @@ public class DataBatch {
     }
 
     public int getTickFactor() { return data.getTickFactor(); }
+
+    public GPU getMyGPU() { return myGPU; }
 }

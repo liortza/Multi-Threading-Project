@@ -12,7 +12,7 @@ public class ConfrenceInformation {
 
     private String name;
     private int date;
-    private LinkedList<String> models;
+    private LinkedList<Model> models;
 
     public ConfrenceInformation(String name, int date) {
         this.name = name;
@@ -25,11 +25,11 @@ public class ConfrenceInformation {
         return date;
     }
 
-    public void addModel(String name) {
-        models.add(name);
+    public void addModel(Model m) {
+        models.add(m);
     }
 
-    public LinkedList<String> getModels() {
+    public LinkedList<Model> getModels() {
         return models;
     }
 }
