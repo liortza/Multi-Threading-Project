@@ -14,15 +14,14 @@ public class Model {
     private String name;
     private Status status;
     private Data data;
-    private boolean isTrained;
-    private boolean published;
+    private Student student;
+    private boolean trained = false, published = false;
 
-    public Model(String name, Data data) {
+    public Model(String name, Data data, Student student) {
         this.name = name;
         status = Status.None;
         this.data = data;
-        isTrained = false;
-        published = false;
+        this.student = student;
     }
 
     public String getName() {
@@ -35,16 +34,18 @@ public class Model {
 
     public Data getData() { return data; }
 
+    public Student getStudent() { return student; }
+
     public void setStatus(Status status) {
         this.status = status;
     }
 
     public boolean isTrained() {
-        return isTrained;
+        return trained;
     }
 
     public void train() {
-        isTrained = true;
+        trained = true;
     }
 
     public void publish() { published = true; }

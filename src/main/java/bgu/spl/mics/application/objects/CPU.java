@@ -56,7 +56,7 @@ public class CPU {
     public void prepareNext() {
         if (incoming.isEmpty()) {
             current = null;
-            cluster.fetchUnprocessedDataCPU(cores);
+            incoming = cluster.fetchUnprocessedDataCPU(cores);
         } if (!incoming.isEmpty()) { // fetch successful
             current = incoming.remove();
             ticksRemaining = (32 / cores) * (current.getTickFactor());
