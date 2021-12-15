@@ -8,6 +8,7 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -55,7 +56,7 @@ public class StudentService extends MicroService {
 
     private void sendTestEvent() {
         TestModelEvent testEvent = null;
-        try {
+        try { // TODO: fix try/catch
             testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
         } catch (InterruptedException e) {}
         testFuture = sendEvent(testEvent);
@@ -63,12 +64,14 @@ public class StudentService extends MicroService {
 
     private void sendPublishEvent() {
         PublishResultsEvent publishEvent = null;
-        Model.Status status = null;
+        Model.Status status;
         try {
-            status = testFuture.get();
-        } catch (InterruptedException e) {}
-        publishEvent = new PublishResultsEvent(current, status);
-        publishFutures.put(current, sendEvent(publishEvent));
+            status = testFuture.get(); // TODO: try/catch ok??
+        } catch (InterruptedException e) { status = testFuture.get(1, TimeUnit.MILLISECONDS); }
+        if (status == Model.Status.Good) {
+            publishEvent = new PublishResultsEvent(current, status);
+            publishFutures.put(current, sendEvent(publishEvent));
+        }
         current = null;
     }
 

@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.Callback;
-import bgu.spl.mics.Message;
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MicroService;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.messages.PublishConfrenceBroadcast;
 import bgu.spl.mics.application.messages.PublishResultsEvent;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
@@ -11,6 +8,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.ConfrenceInformation;
 import bgu.spl.mics.application.objects.Model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -25,6 +23,7 @@ import java.util.HashMap;
 public class ConferenceService extends MicroService {
     private ConfrenceInformation myConference;
     private int currentTick;
+    private ArrayList<PublishResultsEvent> publishEvents = new ArrayList<>();
 
     public ConferenceService(String name, ConfrenceInformation myConference) {
         super(name);
@@ -43,12 +42,13 @@ public class ConferenceService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
-        Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
+        Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminateConference();
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {
         myConference.addModel(event.getModel()); // only "Good" models are sent
+        publishEvents.add(event);
     }
 
     private void updateTick() {
@@ -62,6 +62,15 @@ public class ConferenceService extends MicroService {
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
         for (Model m: myConference.getModels()) m.publish();
+        for (PublishResultsEvent e: publishEvents) {
+            publishEvents.remove(e);
+            complete(e, true);
+        }
         sendBroadcast(broadcast);
+    }
+
+    private void terminateConference() {
+        for (PublishResultsEvent e: publishEvents) complete(e, false); // didn't publish
+        terminate();
     }
 }
