@@ -100,10 +100,11 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
-        BlockingQueue<MicroService> subscribed = broadcastList.get(b);
-        for (MicroService ms : subscribed) {
-            queues.get(ms).add(b); // TODO: put??
-            // ms.notify(); // TODO: ok??
+        if (broadcastList.get(b.getClass()) != null) {
+            for (MicroService ms : broadcastList.get(b.getClass())) {
+                queues.get(ms).add(b); // TODO: put??
+                // ms.notify(); // TODO: ok??
+            }
         }
     }
 
@@ -118,11 +119,11 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
-        if (eventList.get(e) != null) { // at least one microservice subscribed to event type
-            synchronized (eventList.get(e)) {
-                MicroService recipient = eventList.get(e).remove(); // get next in line by round robin
+        if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event type
+            synchronized (eventList.get(e.getClass())) {
+                MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
                 queues.get(recipient).add(e); // TODO: put??
-                eventList.get(e).add(recipient); // add to end of queue
+                eventList.get(e.getClass()).add(recipient); // add to end of queue
             }
             future = new Future<>(); // TODO: check thread safe
             futuresList.put(e, future);
