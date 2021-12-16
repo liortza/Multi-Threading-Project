@@ -3,6 +3,7 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.Message;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.ReadyBroadcast;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.CPU;
@@ -36,5 +37,7 @@ public class CPUService extends MicroService {
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
         System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
+
+        sendBroadcast(new ReadyBroadcast(this));
     }
 }

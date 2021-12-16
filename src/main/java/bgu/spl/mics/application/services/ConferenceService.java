@@ -1,10 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.*;
-import bgu.spl.mics.application.messages.PublishConfrenceBroadcast;
-import bgu.spl.mics.application.messages.PublishResultsEvent;
-import bgu.spl.mics.application.messages.TerminateBroadcast;
-import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.ConfrenceInformation;
 import bgu.spl.mics.application.objects.Model;
 
@@ -47,6 +44,8 @@ public class ConferenceService extends MicroService {
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminateConference();
         System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
+
+        sendBroadcast(new ReadyBroadcast(this));
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {

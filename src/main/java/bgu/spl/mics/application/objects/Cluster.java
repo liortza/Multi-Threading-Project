@@ -39,11 +39,13 @@ public class Cluster {
     }
 
     public void registerGPU(GPU gpu) {
+        System.out.println(gpu.getName() + " is registering at cluster");
         gpus.add(gpu);
         gpuQueues.put(gpu, new LinkedBlockingQueue<>());
     }
 
     public void registerCPU(CPU cpu) {
+        System.out.println(cpu.getName() + " is registering at cluster");
         cpus.add(cpu);
     }
 
