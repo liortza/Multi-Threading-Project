@@ -106,8 +106,10 @@ public class MessageBusImpl implements MessageBus {
     public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
         if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
             for (MicroService ms : broadcastList.get(b.getClass())) {
-                queues.get(ms).add(b);
-                queues.get(ms).notifyAll();
+                //synchronized (broadcastList.get(b.getClass())) {
+                    queues.get(ms).add(b);
+                    //queues.get(ms).notifyAll();
+                //}
             }
         }
     }
@@ -127,7 +129,7 @@ public class MessageBusImpl implements MessageBus {
             synchronized (eventList.get(e.getClass())) {
                 MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
                 queues.get(recipient).add(e);
-                queues.get(recipient).notifyAll();
+                //queues.get(recipient).notifyAll();
                 eventList.get(e.getClass()).add(recipient); // add to end of queue
                 eventList.get(e.getClass()).notifyAll();
             }
