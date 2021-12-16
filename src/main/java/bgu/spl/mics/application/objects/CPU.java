@@ -4,6 +4,7 @@ import bgu.spl.mics.application.services.CPUService;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Passive object representing a single CPU.
@@ -98,5 +99,5 @@ public class CPU {
         return processedBatches;
     }
 
-    public String getName() { return "CPU" + id; }
+    public String getName() { return "CPU" + myId; }
 }

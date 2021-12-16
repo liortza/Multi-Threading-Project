@@ -58,9 +58,10 @@ public class GPU {
             tickFactor = 4;
         }
         vRam = new LinkedBlockingQueue<>(vRamCapacity);
-        myId = ++id;
-        myService = new GPUService(String.valueOf(myId), this);
-        cluster.registerGPU(this);
+        myId = id;
+        id++;
+        // myService = new GPUService(String.valueOf(myId), this);
+        // cluster.registerGPU(this);
     }
 
 //    public void init() {
@@ -225,7 +226,7 @@ public class GPU {
 //        return currentTick;
 //    }
 
-    public String getName() { return "GPU" + id; }
+    public String getName() { return "GPU" + myId; }
 
     public Model getModel() {
         return model;

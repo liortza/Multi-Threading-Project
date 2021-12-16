@@ -81,12 +81,9 @@ public class CRMSRunner {
             TimeService ts = new TimeService(input.getTickTime(), input.getDuration(), threads.size());
             Thread timeT = new Thread(ts);
             services.add(ts);
-            // threads.add(timeT);
             timeT.start();
 
             for (Thread t: threads) t.start();
-
-
 
         } catch (IOException e) {
             System.out.println("caught exception");

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -23,9 +24,9 @@ public class Cluster {
         private static Cluster instance = new Cluster();
     }
 
-    private ArrayList<GPU> gpus = new ArrayList<>();
-    private ArrayList<CPU> cpus = new ArrayList<>();
-    private final ArrayList<String> trainedModels = new ArrayList<>();
+    private final BlockingQueue<GPU> gpus = new LinkedBlockingQueue<>();
+    private final BlockingQueue<CPU> cpus = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> trainedModels = new LinkedBlockingQueue<>();
     private final BlockingQueue<DataBatch> unprocessed = new LinkedBlockingQueue<>();
     private final HashMap<GPU, Queue<DataBatch>> gpuQueues = new HashMap<>();
 
@@ -37,6 +38,8 @@ public class Cluster {
     public static Cluster getInstance() {
         return ClusterHolder.instance;
     }
+
+    public BlockingQueue<GPU> getGpus() { return gpus; } // TODO: delete
 
     public void registerGPU(GPU gpu) {
         System.out.println(gpu.getName() + " is registering at cluster");
