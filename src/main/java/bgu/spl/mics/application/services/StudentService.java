@@ -47,13 +47,15 @@ public class StudentService extends MicroService {
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
         System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
+
+        sendBroadcast(new ReadyBroadcast(this));
     }
 
     private void sendTrainEvent() {
         current = myStudent.getNextModel();
         if (current != null) {
-            System.out.println(getName() + " is sending TrainEvent: " + current.getName());
             TrainModelEvent trainEvent = new TrainModelEvent(getName(), current);
+            System.out.println(getName() + " is sending TrainEvent: " + current.getName());
             trainFuture = sendEvent(trainEvent);
         }
     }
@@ -63,7 +65,8 @@ public class StudentService extends MicroService {
         try { // TODO: fix try/catch
             testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
             System.out.println(getName() + " is sending TestEvent: " + current.getName());
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
         testFuture = sendEvent(testEvent);
     }
 
@@ -72,7 +75,9 @@ public class StudentService extends MicroService {
         Model.Status status;
         try {
             status = testFuture.get(); // TODO: try/catch ok??
-        } catch (InterruptedException e) { status = testFuture.get(1, TimeUnit.MILLISECONDS); }
+        } catch (InterruptedException e) {
+            status = testFuture.get(1, TimeUnit.MILLISECONDS);
+        }
         if (status == Model.Status.Good) {
             System.out.println(getName() + " is sending PublishEvent: " + current.getName());
             publishEvent = new PublishResultsEvent(current, status);

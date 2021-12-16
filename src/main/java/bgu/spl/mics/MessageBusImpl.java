@@ -16,10 +16,10 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBusImpl implements MessageBus {
 
-    private HashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList; // TODO: Event<T> ?
-    private HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
-    private HashMap<MicroService, BlockingQueue<Message>> queues;
-    private HashMap<Event, Future> futuresList;
+    private final HashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList; // TODO: Event<T> ?
+    private final HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
+    private final HashMap<MicroService, BlockingQueue<Message>> queues;
+    private final HashMap<Event, Future> futuresList;
 
     private static class MessageBusHolder {
         private static MessageBusImpl instance = new MessageBusImpl();
@@ -45,9 +45,11 @@ public class MessageBusImpl implements MessageBus {
         synchronized (eventList) {
             if (eventList.get(type) == null) // add event to map if doesn't exist
                 eventList.put(type, new LinkedBlockingQueue<>());
+            eventList.notifyAll();
         } synchronized (eventList.get(type)) {
             if (!isSubscribedToEvent(type, m)) // add m to eventList if not subscribed
                 eventList.get(type).add(m);
+            eventList.get(type).notifyAll();
         }
     }
 
@@ -69,9 +71,11 @@ public class MessageBusImpl implements MessageBus {
         synchronized (broadcastList) {
             if (broadcastList.get(type) == null) // add broadcast to map if doesn't exist
                 broadcastList.put(type, new LinkedBlockingQueue<>());
+            broadcastList.notifyAll();
         } synchronized (broadcastList.get(type)) {
             if (!isSubscribedToBroadcast(type, m)) // add m to broadcastList if not subscribed
                 broadcastList.get(type).add(m);
+            broadcastList.get(type).notifyAll();
         }
     }
 
@@ -100,10 +104,10 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
-        if (broadcastList.get(b.getClass()) != null) {
+        if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
             for (MicroService ms : broadcastList.get(b.getClass())) {
-                queues.get(ms).add(b); // TODO: put??
-                // ms.notify(); // TODO: ok??
+                queues.get(ms).add(b);
+                queues.get(ms).notifyAll();
             }
         }
     }
@@ -119,11 +123,13 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
-        if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event type
+        if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event
             synchronized (eventList.get(e.getClass())) {
                 MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
-                queues.get(recipient).add(e); // TODO: put??
+                queues.get(recipient).add(e);
+                queues.get(recipient).notifyAll();
                 eventList.get(e.getClass()).add(recipient); // add to end of queue
+                eventList.get(e.getClass()).notifyAll();
             }
             future = new Future<>(); // TODO: check thread safe
             futuresList.put(e, future);

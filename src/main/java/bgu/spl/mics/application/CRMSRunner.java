@@ -38,6 +38,7 @@ public class CRMSRunner {
         Gson gson = new Gson();
         try (Reader reader = Files.newBufferedReader(Paths.get("example_input.json"))) {
             Input input = gson.fromJson(reader, Input.class);
+
             students = input.getStudents();
             for (Student s : students) {
                 for (Model m : s.getModels()) m.init(s);
@@ -46,7 +47,6 @@ public class CRMSRunner {
                 Thread studentT = new Thread(studentService);
                 services.add(studentService);
                 threads.add(studentT);
-                studentT.start();
             }
 
             Cluster cluster = Cluster.getInstance();
@@ -58,7 +58,6 @@ public class CRMSRunner {
                 Thread gpuT = new Thread(gpuService);
                 services.add(gpuService);
                 threads.add(gpuT);
-                gpuT.start();
             }
 
             for (int cores : input.getCpus()) {
@@ -68,7 +67,6 @@ public class CRMSRunner {
                 Thread cpuT = new Thread(cpuService);
                 services.add(cpuService);
                 threads.add(cpuT);
-                cpuT.start();
             }
 
             conferences = input.getConferences();
@@ -77,21 +75,18 @@ public class CRMSRunner {
                 Thread confT = new Thread(confService);
                 services.add(confService);
                 threads.add(confT);
-                confT.start();
             }
 
-            // wait for all threads to finish registering and subscribing before starting ticks
-            for (MicroService ms : services) {
-//                try {
-//
-//                }
-            }
-
-            TimeService ts = new TimeService(input.getTickTime(), input.getDuration());
+            // start time service
+            TimeService ts = new TimeService(input.getTickTime(), input.getDuration(), threads.size());
             Thread timeT = new Thread(ts);
             services.add(ts);
-            threads.add(timeT);
+            // threads.add(timeT);
             timeT.start();
+
+            for (Thread t: threads) t.start();
+
+
 
         } catch (IOException e) {
             System.out.println("caught exception");

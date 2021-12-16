@@ -28,7 +28,8 @@ public class CPU {
     public CPU(int cores) {
         this.cores = cores;
         capacity = cores; // TODO: see how to define capacity
-        myId = ++id;
+        myId = id;
+        id++;
         // new CPUService(String.valueOf(myId), this);
     }
 

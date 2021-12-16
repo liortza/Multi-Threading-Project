@@ -1,10 +1,7 @@
 package bgu.spl.mics.application.services;
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.Event;
-import bgu.spl.mics.application.messages.TerminateBroadcast;
-import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.messages.TrainModelEvent;
-import bgu.spl.mics.application.messages.TestModelEvent;
+import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.GPU;
 
@@ -45,6 +42,8 @@ public class GPUService extends MicroService {
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
         System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
+
+        sendBroadcast(new ReadyBroadcast(this));
     }
 
     public <T> void completeEvent(Event<T> e, T result) {

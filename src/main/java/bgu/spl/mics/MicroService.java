@@ -24,8 +24,8 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
-    private MessageBus bus = MessageBusImpl.getInstance();
-    private HashMap<Class<? extends Message>, Callback<? extends Message>> callbacks = new HashMap<>();
+    private final MessageBus bus = MessageBusImpl.getInstance();
+    private final HashMap<Class<? extends Message>, Callback> callbacks = new HashMap<>();
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -166,9 +166,11 @@ public abstract class MicroService implements Runnable {
         while (!terminated) {
             try {
                 Message m = bus.awaitMessage(this);
-                Callback callback = callbacks.get(m.getClass());
+                Callback<Message> callback = callbacks.get(m.getClass());
                 callback.call(m);
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                terminate();
+            }
         }
         bus.unregister(this);
     }
