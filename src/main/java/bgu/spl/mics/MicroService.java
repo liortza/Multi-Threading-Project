@@ -105,9 +105,7 @@ public abstract class MicroService implements Runnable {
      * micro-service processing this event.
      * null in case no micro-service has subscribed to {@code e.getClass()}.
      */
-    protected final <T> Future<T> sendEvent(Event<T> e) {
-        return bus.sendEvent(e);
-    }
+    protected final <T> Future<T> sendEvent(Event<T> e) { return bus.sendEvent(e); }
 
     /**
      * A Micro-Service calls this method in order to send the broadcast message {@code b} using the message-bus
@@ -166,11 +164,14 @@ public abstract class MicroService implements Runnable {
         bus.register(this);
         initialize();
         while (!terminated) {
+            Message m = null;
             try {
-                Message m = bus.awaitMessage(this);
-                Callback callback = callbacks.get(m);
+                m = bus.awaitMessage(this);
+            } catch (InterruptedException e) {
+            } finally {
+                Callback callback = callbacks.get(m.getClass());
                 callback.call(m);
-            } catch (InterruptedException e) {}
+            }
         }
         bus.unregister(this);
     }
