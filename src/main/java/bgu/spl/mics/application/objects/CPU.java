@@ -48,7 +48,7 @@ public class CPU {
             cluster.incomingBatchFromCPU(current);
             prepareNext();
         } else if (current != null & ticksRemaining > 1) { // during process
-            System.out.println(getName() + "during process, " + ticksRemaining + " ticks remaining");
+            System.out.println(getName() + " during process, " + ticksRemaining + " ticks remaining");
             ticksRemaining--;
             ticksUsed++;
         } else prepareNext();
@@ -57,7 +57,7 @@ public class CPU {
     public void prepareNext() {
         if (incoming.isEmpty()) {
             current = null;
-            incoming = cluster.fetchUnprocessedDataCPU(cores);
+            incoming = cluster.fetchUnprocessedDataCPU(cores / 2);
         } if (!incoming.isEmpty()) { // fetch successful
             current = incoming.remove();
             ticksRemaining = (32 / cores) * (current.getTickFactor());

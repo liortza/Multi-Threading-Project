@@ -84,7 +84,7 @@ public class CRMSRunner {
             timeT.start();
 
             try {
-                Thread.sleep(50);
+                Thread.sleep(50); // wait for timeService to subscribe to ReadyBroadcast
             } catch (InterruptedException e) {}
 
             for (Thread t: threads) t.start();

@@ -30,12 +30,10 @@ public class CPUService extends MicroService {
     protected void initialize() {
         // TickBroadcast
         Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> cpu.updateTick();
-        System.out.println(getName() + " is subscribing to tickBroad");
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
-        System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
 
         sendBroadcast(new ReadyBroadcast(this));

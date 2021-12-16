@@ -116,7 +116,6 @@ public abstract class MicroService implements Runnable {
      */
     protected final void sendBroadcast(Broadcast b) {
         bus.sendBroadcast(b);
-        System.out.println("broadcast sent"); // todo: delete
     }
 
     /**

@@ -44,19 +44,20 @@ public class GPU {
         if (type.equals("RTX3090")) {
             this.type = Type.RTX3090;
             vRamCapacity = 32;
-            batchesToCluster = 8;
+            //batchesToCluster = 8;
             tickFactor = 1;
         } else if (type.equals("RTX2080")) {
             this.type = Type.RTX2080;
             vRamCapacity = 16;
-            batchesToCluster = 4;
+            //batchesToCluster = 4;
             tickFactor = 2;
         } else {
             this.type = Type.GTX1080;
             vRamCapacity = 8;
-            batchesToCluster = 2;
+            //batchesToCluster = 2;
             tickFactor = 4;
         }
+        batchesToCluster = vRamCapacity / 2;
         vRam = new LinkedBlockingQueue<>(vRamCapacity);
         myId = id;
         id++;
@@ -94,7 +95,6 @@ public class GPU {
     public void updateTick() {
         currentTick++;
         if (model != null) { // currently training a model
-            sendBatchesToCluster();
             if (current != null & ticksRemaining == 1) { // finished training a batch
                 System.out.println(getName() + " finished training a batch");
                 prepareNext();
@@ -112,18 +112,15 @@ public class GPU {
             } else prepareNext();
         } else { // test all models and start training next model
             Message m;
-            while (!messageDeque.isEmpty()) {
+            while (!messageDeque.isEmpty() & model == null) {
                 m = messageDeque.getFirst();
                 if (m instanceof TestModelEvent) {
                     System.out.println(getName() + " testing model: " + model.getName());
                     testModel((TestModelEvent) m);
-                }
-                else {
-                    prepareModelForTraining((TrainModelEvent) m);
-                    sendBatchesToCluster();
-                }
+                } else { prepareModelForTraining((TrainModelEvent) m); }
             }
         }
+        sendBatchesToCluster();
     }
 
     public void prepareNext() {

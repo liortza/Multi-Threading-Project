@@ -102,13 +102,11 @@ public class MessageBusImpl implements MessageBus {
      */
 
     @Override
-    public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
-        System.out.println("broadcast received (bus)");
+    public void sendBroadcast(Broadcast b) {
         if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
             BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
             for (MicroService ms : subscribers) {
                 queues.get(ms).add(b);
-                System.out.println(ms.getName() + " got broadcast");
             }
         }
     }

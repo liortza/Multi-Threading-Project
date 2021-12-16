@@ -35,17 +35,14 @@ public class StudentService extends MicroService {
     protected void initialize() {
         // PublishConferenceBroadcast
         Callback<PublishConfrenceBroadcast> publishCallback = (PublishConfrenceBroadcast b) -> handlePublishBroadcast(b);
-        System.out.println(getName() + " is subscribing to pubBroad");
         subscribeBroadcast(PublishConfrenceBroadcast.class, publishCallback);
 
         // TickEvent
         Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> updateTick();
-        System.out.println(getName() + " is subscribing to tickBroad");
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminate();
-        System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
 
         sendBroadcast(new ReadyBroadcast(this));

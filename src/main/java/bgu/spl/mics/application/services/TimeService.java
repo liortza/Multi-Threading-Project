@@ -41,13 +41,11 @@ public class TimeService extends MicroService {
     }
 
     private void handleReadyBroadcast() { // wait for all services to register and subscribe
-        notReadyServices = notReadyServices - 1;
-        System.out.println("waiting for " + notReadyServices + " more threads");
+        notReadyServices--;
         if (notReadyServices == 0) sendTicks();
     }
 
     private void sendTicks() {
-        System.out.println("ticks starting");
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

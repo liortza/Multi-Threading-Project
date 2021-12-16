@@ -32,17 +32,14 @@ public class ConferenceService extends MicroService {
     protected void initialize() {
         // PublishResultsEvent
         Callback<PublishResultsEvent> publishCallback = (PublishResultsEvent e) -> handlePublishEvent(e);
-        System.out.println(getName() + " is subscribing to pubBroad");
         subscribeEvent(PublishResultsEvent.class, publishCallback);
 
         // TickBroadcast
         Callback<TickBroadcast> tickCallback = (TickBroadcast b) -> updateTick();
-        System.out.println(getName() + " is subscribing to tickBroad");
         subscribeBroadcast(TickBroadcast.class, tickCallback);
 
         // TerminateBroadcast
         Callback<TerminateBroadcast> terminateCallback = (TerminateBroadcast b) -> terminateConference();
-        System.out.println(getName() + " is subscribing to terminateBroad");
         subscribeBroadcast(TerminateBroadcast.class, terminateCallback);
 
         sendBroadcast(new ReadyBroadcast(this));
@@ -66,7 +63,6 @@ public class ConferenceService extends MicroService {
             complete(e, true);
         }
 
-        System.out.print(getName() + " is sending PubConfBroad. models: ");
         for (Model m: myConference.getModels()) {
             System.out.print(m.getName() + ", ");
         }
