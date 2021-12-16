@@ -8,6 +8,5 @@ public class ReadyBroadcast implements Broadcast {
 
     public ReadyBroadcast(MicroService ms) {
         microService = ms;
-        System.out.println(ms.getName() + " is ready");
     }
 }

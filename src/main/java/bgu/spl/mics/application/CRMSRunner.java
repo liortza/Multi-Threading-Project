@@ -83,6 +83,10 @@ public class CRMSRunner {
             services.add(ts);
             timeT.start();
 
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {}
+
             for (Thread t: threads) t.start();
 
         } catch (IOException e) {

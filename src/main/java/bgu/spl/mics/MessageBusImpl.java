@@ -1,8 +1,5 @@
 package bgu.spl.mics;
 
-import bgu.spl.mics.application.messages.TestModelEvent;
-import bgu.spl.mics.application.messages.TrainModelEvent;
-
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,7 +43,8 @@ public class MessageBusImpl implements MessageBus {
             if (eventList.get(type) == null) // add event to map if doesn't exist
                 eventList.put(type, new LinkedBlockingQueue<>());
             eventList.notifyAll();
-        } synchronized (eventList.get(type)) {
+        }
+        synchronized (eventList.get(type)) {
             if (!isSubscribedToEvent(type, m)) // add m to eventList if not subscribed
                 eventList.get(type).add(m);
             eventList.get(type).notifyAll();
@@ -72,7 +70,8 @@ public class MessageBusImpl implements MessageBus {
             if (broadcastList.get(type) == null) // add broadcast to map if doesn't exist
                 broadcastList.put(type, new LinkedBlockingQueue<>());
             broadcastList.notifyAll();
-        } synchronized (broadcastList.get(type)) {
+        }
+        synchronized (broadcastList.get(type)) {
             if (!isSubscribedToBroadcast(type, m)) // add m to broadcastList if not subscribed
                 broadcastList.get(type).add(m);
             broadcastList.get(type).notifyAll();
@@ -104,12 +103,12 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public void sendBroadcast(Broadcast b) { // TODO: throwsInterruptedException??
+        System.out.println("broadcast received (bus)");
         if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
-            for (MicroService ms : broadcastList.get(b.getClass())) {
-                //synchronized (broadcastList.get(b.getClass())) {
-                    queues.get(ms).add(b);
-                    //queues.get(ms).notifyAll();
-                //}
+            BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
+            for (MicroService ms : subscribers) {
+                queues.get(ms).add(b);
+                System.out.println(ms.getName() + " got broadcast");
             }
         }
     }
@@ -188,4 +187,5 @@ public class MessageBusImpl implements MessageBus {
     public static MessageBus getInstance() {
         return MessageBusHolder.instance;
     }
+
 }

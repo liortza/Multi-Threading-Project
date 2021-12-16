@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Callback;
+import bgu.spl.mics.MessageBus;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.ReadyBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
@@ -19,11 +21,11 @@ import java.util.TimerTask;
  */
 public class TimeService extends MicroService {
 
-    int tickCounter = 1;
-    int speed;
-    int duration;
-    int notReadyServices;
-    Timer timer;
+    private int tickCounter = 1;
+    private final int speed;
+    private final int duration;
+    private int notReadyServices;
+    private Timer timer;
 
     public TimeService(int speed, int duration, int notReadyServices) {
         super("TimeService");
@@ -34,16 +36,18 @@ public class TimeService extends MicroService {
 
     @Override
     protected void initialize() {
-        Callback<ReadyBroadcast> readyCallback = ((ReadyBroadcast b) -> handleReadyBroadcast(b));
+        Callback<ReadyBroadcast> readyCallback = ((ReadyBroadcast b) -> handleReadyBroadcast());
         subscribeBroadcast(ReadyBroadcast.class, readyCallback);
     }
 
-    private void handleReadyBroadcast(ReadyBroadcast b) { // wait for all services to register and subscribe
-        notReadyServices--;
+    private void handleReadyBroadcast() { // wait for all services to register and subscribe
+        notReadyServices = notReadyServices - 1;
+        System.out.println("waiting for " + notReadyServices + " more threads");
         if (notReadyServices == 0) sendTicks();
     }
 
     private void sendTicks() {
+        System.out.println("ticks starting");
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
