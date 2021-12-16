@@ -1,5 +1,6 @@
 package bgu.spl.mics.application;
 
+import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 
@@ -29,6 +30,7 @@ public class CRMSRunner {
     static Student[] students;
     static ConfrenceInformation[] conferences;
     static Cluster cluster = new Cluster();
+    static LinkedList<MicroService> services = new LinkedList<>();
 
     public static void main(String[] args) {
         // region PARSING INPUT
@@ -41,6 +43,7 @@ public class CRMSRunner {
                 s.init();
                 StudentService studentService = new StudentService(s.getName(), s);
                 Thread studentT = new Thread(studentService);
+                services.add(studentService);
                 studentT.start();
             }
 
@@ -51,6 +54,7 @@ public class CRMSRunner {
                 cluster.registerGPU(gpu);
                 GPUService gpuService = new GPUService(gpu.getName(), gpu);
                 Thread gpuT = new Thread(gpuService);
+                services.add(gpuService);
                 gpuT.start();
             }
 
@@ -59,6 +63,7 @@ public class CRMSRunner {
                 cluster.registerCPU(cpu);
                 CPUService cpuService = new CPUService(cpu.getName(), cpu);
                 Thread cpuT = new Thread(cpuService);
+                services.add(cpuService);
                 cpuT.start();
             }
 
@@ -66,10 +71,16 @@ public class CRMSRunner {
             for (ConfrenceInformation cInfo : conferences) {
                 ConferenceService confService = new ConferenceService(cInfo.getName(), cInfo);
                 Thread confT = new Thread(confService);
+                services.add(confService);
                 confT.start();
             }
 
             // wait for all threads to finish registering and subscribing before starting ticks
+            for (MicroService ms: services) {
+//                try {
+//
+//                }
+            }
 
             Thread timeT = new Thread(new TimeService(input.getTickTime(), input.getDuration()));
             timeT.start();
@@ -78,8 +89,8 @@ public class CRMSRunner {
             System.out.println("caught exception");
         }
         // endregion
-       Output();
 
+       Output();
 
     }
 
