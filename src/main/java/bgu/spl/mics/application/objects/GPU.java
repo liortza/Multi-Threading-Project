@@ -177,6 +177,7 @@ public class GPU {
      * @post disc.size() == max{0, @pre(disc.size()) - numOfBatches}
      */
     public void sendBatchesToCluster() {
+        System.out.println(getName() + " sent batches to cluster");
         Queue<DataBatch> toCluster = new LinkedList<>();
         for (int i = 0; i < batchesToCluster & !disc.isEmpty(); i++) {
             toCluster.add(disc.remove());
