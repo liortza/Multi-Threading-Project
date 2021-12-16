@@ -95,14 +95,17 @@ public class GPU {
         if (model != null) { // currently training a model
             sendBatchesToCluster();
             if (current != null & ticksRemaining == 1) { // finished training a batch
+                System.out.println(getName() + " finished training a batch");
                 prepareNext();
                 remainingModelBatches--;
                 if (remainingModelBatches == 0) { // finished training model
+                    System.out.println(getName() + " finished training model: " + model.getName());
                     model.train();
                     myService.completeEvent(trainEvent, model);
                     cluster.addTrained(model.getName());
                 }
-            } else if (current != null & ticksRemaining > 1) {
+            } else if (current != null & ticksRemaining > 1) { // during training
+                System.out.println(getName() + " during training, " + ticksRemaining + " ticks remaining");
                 ticksRemaining--;
                 ticksUsed++;
             } else prepareNext();
@@ -110,7 +113,10 @@ public class GPU {
             Message m;
             while (!messageDeque.isEmpty()) {
                 m = messageDeque.getFirst();
-                if (m instanceof TestModelEvent) testModel((TestModelEvent) m);
+                if (m instanceof TestModelEvent) {
+                    System.out.println(getName() + " testing model: " + model.getName());
+                    testModel((TestModelEvent) m);
+                }
                 else {
                     prepareModelForTraining((TrainModelEvent) m);
                     sendBatchesToCluster();
@@ -214,9 +220,9 @@ public class GPU {
         myService.completeEvent(e, e.getModel().getStatus());
     }
 
-    public int getCurrentTick() {
-        return currentTick;
-    }
+//    public int getCurrentTick() {
+//        return currentTick;
+//    }
 
     public String getName() { return "GPU" + id; }
 

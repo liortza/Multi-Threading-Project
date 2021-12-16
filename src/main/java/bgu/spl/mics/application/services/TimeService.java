@@ -47,7 +47,7 @@ public class TimeService extends MicroService{
 	}
 
 	private void sendTerminateBroadcast() {
-		// send
+		System.out.println(getName() + " is sending termination broadcast");
 		timer.cancel();
 		terminate();
 	}

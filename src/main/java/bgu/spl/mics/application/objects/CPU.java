@@ -41,10 +41,12 @@ public class CPU {
         currentTick++;
         if (current != null & ticksRemaining == 1) { // finished processing batch
             current.process();
+            System.out.println(getName() + " finished processing batch");
             processedBatches++;
             cluster.incomingBatchFromCPU(current);
             prepareNext();
         } else if (current != null & ticksRemaining > 1) { // during process
+            System.out.println(getName() + "during process, " + ticksRemaining + " ticks remaining");
             ticksRemaining--;
             ticksUsed++;
         } else prepareNext();
@@ -65,27 +67,27 @@ public class CPU {
      * @post outgoing.size() = @pre(outgoing.size) + @pre(incoming.size())
      * @post ticksUsed > @pre(ticksUsed)
      */
-    public void processData() {
-        if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
-        while (!incoming.isEmpty()) {
+//    public void processData() {
+//        if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
+//        while (!incoming.isEmpty()) {
+//
+//        }
+//        // if incoming is empty
+//        // cpu service should bring more data
+//        // cluster.incomingBatchFromCPU();
+//    }
 
-        }
-        // if incoming is empty
-        // cpu service should bring more data
-        // cluster.incomingBatchFromCPU();
-    }
-
-    public void addToIncoming(DataBatch dataBatch) { // used for tests
-        incoming.add(dataBatch);
-    }
-
-    public int getIncomingSize() { // used for tests
-        return incoming.size();
-    }
-
-    public int getCurrentTick() { // used for tests
-        return currentTick;
-    }
+//    public void addToIncoming(DataBatch dataBatch) { // used for tests
+//        incoming.add(dataBatch);
+//    }
+//
+//    public int getIncomingSize() { // used for tests
+//        return incoming.size();
+//    }
+//
+//    public int getCurrentTick() { // used for tests
+//        return currentTick;
+//    }
 
     public int getTicksUsed() { // used for tests
         return ticksUsed;

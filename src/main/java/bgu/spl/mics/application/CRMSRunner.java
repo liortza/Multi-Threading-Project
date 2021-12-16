@@ -31,6 +31,7 @@ public class CRMSRunner {
     static ConfrenceInformation[] conferences;
     static Cluster cluster = new Cluster();
     static LinkedList<MicroService> services = new LinkedList<>();
+    static LinkedList<Thread> threads = new LinkedList<>();
 
     public static void main(String[] args) {
         // region PARSING INPUT
@@ -44,6 +45,7 @@ public class CRMSRunner {
                 StudentService studentService = new StudentService(s.getName(), s);
                 Thread studentT = new Thread(studentService);
                 services.add(studentService);
+                threads.add(studentT);
                 studentT.start();
             }
 
@@ -55,6 +57,7 @@ public class CRMSRunner {
                 GPUService gpuService = new GPUService(gpu.getName(), gpu);
                 Thread gpuT = new Thread(gpuService);
                 services.add(gpuService);
+                threads.add(gpuT);
                 gpuT.start();
             }
 
@@ -64,6 +67,7 @@ public class CRMSRunner {
                 CPUService cpuService = new CPUService(cpu.getName(), cpu);
                 Thread cpuT = new Thread(cpuService);
                 services.add(cpuService);
+                threads.add(cpuT);
                 cpuT.start();
             }
 
@@ -72,17 +76,21 @@ public class CRMSRunner {
                 ConferenceService confService = new ConferenceService(cInfo.getName(), cInfo);
                 Thread confT = new Thread(confService);
                 services.add(confService);
+                threads.add(confT);
                 confT.start();
             }
 
             // wait for all threads to finish registering and subscribing before starting ticks
-            for (MicroService ms: services) {
+            for (MicroService ms : services) {
 //                try {
 //
 //                }
             }
 
-            Thread timeT = new Thread(new TimeService(input.getTickTime(), input.getDuration()));
+            TimeService ts = new TimeService(input.getTickTime(), input.getDuration());
+            Thread timeT = new Thread(ts);
+            services.add(ts);
+            threads.add(timeT);
             timeT.start();
 
         } catch (IOException e) {
@@ -90,7 +98,13 @@ public class CRMSRunner {
         }
         // endregion
 
-       Output();
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {}
+        }
+
+        Output();
 
     }
 

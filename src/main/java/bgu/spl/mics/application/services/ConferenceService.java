@@ -56,10 +56,7 @@ public class ConferenceService extends MicroService {
 
     private void updateTick() {
         currentTick++;
-        if (currentTick == myConference.getDate()) {
-            publishConferenceBroadcast();
-            // super.unregister(this);
-        }
+        if (currentTick == myConference.getDate()) { publishConferenceBroadcast(); }
     }
 
     private void publishConferenceBroadcast() {
@@ -69,11 +66,19 @@ public class ConferenceService extends MicroService {
             publishEvents.remove(e);
             complete(e, true);
         }
+
+        System.out.print(getName() + " is sending PubConfBroad. models: ");
+        for (Model m: myConference.getModels()) {
+            System.out.print(m.getName() + ", ");
+        }
+        System.out.println("");
+
         sendBroadcast(broadcast);
     }
 
     private void terminateConference() {
         for (PublishResultsEvent e: publishEvents) complete(e, false); // didn't publish
+        System.out.println("conf: " + getName() + " is terminating");
         terminate();
     }
 }
