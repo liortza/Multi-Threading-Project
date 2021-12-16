@@ -106,18 +106,19 @@ public class CRMSRunner {
     private static void Output() {
         JsonArray Output = new JsonArray();
         JsonArray studentsOutput = new JsonArray();
-        Output.set(0, studentsOutput);
+        //Output.set(0, studentsOutput);
+        Output.add(studentsOutput);
         JsonArray conferences = new JsonArray();
-        Output.set(1, conferences);
+        Output.add(conferences);
         JsonObject cpuTimeUsed = new JsonObject();
         cpuTimeUsed.addProperty("cpuTimeUsed", cluster.cpuTicksUsed());
-        Output.set(2, cpuTimeUsed);
+        Output.add(cpuTimeUsed);
         JsonObject gpuTimeUsed = new JsonObject();
         gpuTimeUsed.addProperty("gpuTimeUsed", cluster.gpuTicksUsed());
-        Output.set(3, gpuTimeUsed);
+        Output.add(gpuTimeUsed);
         JsonObject batchesProcessed = new JsonObject();
         batchesProcessed.addProperty("batchesProcessed", cluster.cpuTotalProcessedBatches());
-        Output.set(4, batchesProcessed);
+        Output.add(batchesProcessed);
         //build Students
         for (int i = 0; i < CRMSRunner.students.length; i++) {
             //build student
@@ -125,90 +126,90 @@ public class CRMSRunner {
             //insert student data
             JsonObject name = new JsonObject();
             name.addProperty("name", CRMSRunner.students[i].getName());
-            student.set(0, name);
+            student.add(name);
             JsonObject department = new JsonObject();
             department.addProperty("department", CRMSRunner.students[i].getDepartment());
-            student.set(1, department);
+            student.add(department);
             JsonObject status = new JsonObject();
             status.addProperty("status", CRMSRunner.students[i].getStatus());
-            student.set(2, status);
+            student.add(status);
             JsonObject publications = new JsonObject();
-            publications.addProperty("publications", CRMSRunner.students[i].getStatus());
-            student.set(3, publications);
+            publications.addProperty("publications", CRMSRunner.students[i].getNumOfPublications());
+            student.add(publications);
             JsonObject papersRead = new JsonObject();
             papersRead.addProperty("papersRead", CRMSRunner.students[i].getNumOfPapers());
-            student.set(4, papersRead);
+            student.add(papersRead);
             //models
             JsonArray trainedModels = new JsonArray();
             Model[] studentModels = CRMSRunner.students[i].getModels();
             for (int j = 0; j < studentModels.length; j++) {
-                if (studentModels[i].isTrained()) {
+                if (studentModels[j].isTrained()) {
                     //create model
                     JsonArray model = new JsonArray();
                     JsonObject modelName = new JsonObject();
-                    modelName.addProperty("name", studentModels[i].getName());
-                    model.set(0, modelName);
+                    modelName.addProperty("name", studentModels[j].getName());
+                    model.add(modelName);
                     //create model data
                     JsonArray data = new JsonArray();
-                    Data ModelData = studentModels[i].getData();
+                    Data ModelData = studentModels[j].getData();
                     JsonObject type = new JsonObject();
                     type.addProperty("type", ModelData.getTypeS());
-                    data.set(0, type);
+                    data.add(type);
                     JsonObject size = new JsonObject();
                     size.addProperty("size", ModelData.getSize());
-                    data.set(1, size);
-                    model.set(1, data);
+                    data.add(size);
+                    model.add(data);
                     //continue model
                     JsonObject modelStatus = new JsonObject();
-                    modelStatus.addProperty("status", studentModels[i].getTested());
-                    model.set(2, modelName);
+                    modelStatus.addProperty("status", studentModels[j].getTested());
+                    model.add(modelName);
                     JsonObject results = new JsonObject();
-                    results.addProperty("results", studentModels[i].getResults());
-                    model.set(3, results);
+                    results.addProperty("results", studentModels[j].getResults());
+                    model.add(results);
                     trainedModels.add(model);
                 }
             }
-            student.set(5, trainedModels);
+            student.add(trainedModels);
             //insert student x to students
-            studentsOutput.set(i, student);
+            studentsOutput.add(student);
         }
         //build conferences
         for (int i = 0; i < CRMSRunner.conferences.length; i++) {
             JsonObject conferenceName = new JsonObject();
             conferenceName.addProperty("name", CRMSRunner.conferences[i].getName());
-            conferences.set(0, conferenceName);
+            conferences.add(conferenceName);
             JsonObject conferenceDate = new JsonObject();
             conferenceDate.addProperty("Date", CRMSRunner.conferences[i].getDate());
-            conferences.set(1, conferenceDate);
+            conferences.add(conferenceDate);
             //conference publications
             JsonArray publications = new JsonArray();
             LinkedList<Model> conferencePublications = CRMSRunner.conferences[i].getModels();
-            for (int j = 0; i < conferencePublications.size(); i++) {
+            for (int j = 0;conferencePublications!=null && j < conferencePublications.size(); j++) {
                 //create model
                 JsonArray CModel = new JsonArray();
                 JsonObject CModelName = new JsonObject();
-                CModelName.addProperty("name", conferencePublications.get(i).getName());
-                CModel.set(0, CModelName);
+                CModelName.addProperty("name", conferencePublications.get(j).getName());
+                CModel.add(CModelName);
                 //create CModel data
                 JsonArray CData = new JsonArray();
-                Data CModelData = conferencePublications.get(i).getData();
+                Data CModelData = conferencePublications.get(j).getData();
                 JsonObject CType = new JsonObject();
                 CType.addProperty("type", CModelData.getTypeS());
-                CData.set(0, CType);
+                CData.add(CType);
                 JsonObject CSize = new JsonObject();
                 CSize.addProperty("size", CModelData.getSize());
-                CData.set(1, CSize);
-                CModel.set(1, CData);
+                CData.add(CSize);
+                CModel.add(CData);
                 //continue model
                 JsonObject CModelStatus = new JsonObject();
-                CModelStatus.addProperty("status", conferencePublications.get(i).getTested());
-                CModel.set(2, CModelStatus);
+                CModelStatus.addProperty("status", conferencePublications.get(j).getTested());
+                CModel.add(CModelStatus);
                 JsonObject CResults = new JsonObject();
-                CResults.addProperty("results", conferencePublications.get(i).getResults());
-                CModel.set(3, CResults);
+                CResults.addProperty("results", conferencePublications.get(j).getResults());
+                CModel.add(CResults);
                 publications.add(CModel);
             }
-            conferences.set(2, publications);
+            conferences.add(publications);
         }
         try {
             FileWriter file = new FileWriter("E:/output.json");
