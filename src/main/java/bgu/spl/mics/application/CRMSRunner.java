@@ -78,15 +78,15 @@ public class CRMSRunner {
             System.out.println("caught exception");
         }
         // endregion
-        Output();
+       Output();
+
 
     }
 
     private static void Output() {
-        JsonArray output = new JsonArray();
         JsonArray Output = new JsonArray();
-        JsonArray students = new JsonArray();
-        Output.set(0, students);
+        JsonArray studentsOutput = new JsonArray();
+        Output.set(0, studentsOutput);
         JsonArray conferences = new JsonArray();
         Output.set(1, conferences);
         JsonObject cpuTimeUsed = new JsonObject();
@@ -150,7 +150,7 @@ public class CRMSRunner {
             }
             student.set(5, trainedModels);
             //insert student x to students
-            students.set(i, student);
+            studentsOutput.set(i, student);
         }
         //build conferences
         for (int i = 0; i < CRMSRunner.conferences.length; i++) {
