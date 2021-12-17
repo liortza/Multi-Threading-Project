@@ -32,14 +32,14 @@
         },
         {
             "name": "Zazu",
-            "department": "EE",            
+            "department": "EE",
             "status": "PhD",
             "models":
             [
                 {
                     "name": "VIT",
                     "type": "images",
-                    "size": 100000000
+                    "size": 1000
                 }
             ]
 

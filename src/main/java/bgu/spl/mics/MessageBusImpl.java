@@ -2,6 +2,7 @@ package bgu.spl.mics;
 
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -13,20 +14,21 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBusImpl implements MessageBus {
 
-    private final HashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList; // TODO: Event<T> ?
-    private final HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
+    private final ConcurrentHashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList;
+    private final ConcurrentHashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
     private final HashMap<MicroService, BlockingQueue<Message>> queues;
-    private final HashMap<Event, Future> futuresList;
+    private final ConcurrentHashMap<Event, Future> futuresList;
+    private final Object eventKey = new Object(), broadcastKey = new Object();
 
     private static class MessageBusHolder {
         private static MessageBusImpl instance = new MessageBusImpl();
     }
 
     public MessageBusImpl() {
-        eventList = new HashMap<>();
-        broadcastList = new HashMap<>();
+        eventList = new ConcurrentHashMap<>();
+        broadcastList = new ConcurrentHashMap<>();
         queues = new HashMap<>();
-        futuresList = new HashMap<>();
+        futuresList = new ConcurrentHashMap<>();
     }
 
     /**
@@ -39,16 +41,10 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
-        synchronized (eventList) {
-            if (eventList.get(type) == null) // add event to map if doesn't exist
-                eventList.put(type, new LinkedBlockingQueue<>());
-            eventList.notifyAll();
-        }
-        synchronized (eventList.get(type)) {
-            if (!isSubscribedToEvent(type, m)) // add m to eventList if not subscribed
-                eventList.get(type).add(m);
-            eventList.get(type).notifyAll();
-        }
+        if (eventList.get(type) == null) // add event to map if doesn't exist
+            eventList.put(type, new LinkedBlockingQueue<>());
+        if (!isSubscribedToEvent(type, m)) // add m to eventList if not subscribed
+            eventList.get(type).add(m);
     }
 
     public <T> boolean isSubscribedToEvent(Class<? extends Event<T>> type, MicroService m) {
@@ -66,16 +62,10 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService must be registered before subscribe");
-        synchronized (broadcastList) {
-            if (broadcastList.get(type) == null) // add broadcast to map if doesn't exist
-                broadcastList.put(type, new LinkedBlockingQueue<>());
-            broadcastList.notifyAll();
-        }
-        synchronized (broadcastList.get(type)) {
-            if (!isSubscribedToBroadcast(type, m)) // add m to broadcastList if not subscribed
-                broadcastList.get(type).add(m);
-            broadcastList.get(type).notifyAll();
-        }
+        if (broadcastList.get(type) == null) // add broadcast to map if doesn't exist
+            broadcastList.put(type, new LinkedBlockingQueue<>());
+        if (!isSubscribedToBroadcast(type, m)) // add m to broadcastList if not subscribed
+            broadcastList.get(type).add(m);
     }
 
     public <T> boolean isSubscribedToBroadcast(Class<? extends Broadcast> type, MicroService m) {
@@ -106,7 +96,10 @@ public class MessageBusImpl implements MessageBus {
         if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
             BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
             for (MicroService ms : subscribers) {
-                queues.get(ms).add(b);
+                synchronized (broadcastKey) {
+                    if (queues.containsKey(ms)) queues.get(ms).add(b);
+                    broadcastKey.notifyAll();
+                }
             }
         }
     }
@@ -123,18 +116,14 @@ public class MessageBusImpl implements MessageBus {
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
         if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event
-            synchronized (eventList.get(e.getClass())) {
+            synchronized (eventKey) {
                 MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
                 queues.get(recipient).add(e);
-                //queues.get(recipient).notifyAll();
+                eventKey.notifyAll();
                 eventList.get(e.getClass()).add(recipient); // add to end of queue
-                eventList.get(e.getClass()).notifyAll();
             }
-            future = new Future<>(); // TODO: check thread safe
-            synchronized (futuresList) {
-                futuresList.put(e, future);
-                futuresList.notifyAll();
-            }
+            future = new Future<>();
+            futuresList.put(e, future);
         }
         return future;
     }
@@ -147,11 +136,8 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void register(MicroService m) {
         if (m == null) throw new IllegalArgumentException("MicroService is null");
-        synchronized (queues) {
-            if (isRegistered(m)) throw new IllegalStateException("MicroService already registered");
-            queues.put(m, new LinkedBlockingQueue<>());
-            queues.notifyAll();
-        }
+        if (isRegistered(m)) throw new IllegalStateException("MicroService already registered");
+        queues.put(m, new LinkedBlockingQueue<>());
     }
 
     public boolean isRegistered(MicroService m) {
@@ -168,7 +154,17 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void unregister(MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService is not registered");
-        queues.remove(m);
+        for (BlockingQueue<MicroService> subscribed : eventList.values())
+            synchronized (eventKey) {
+                subscribed.remove(m);
+                eventKey.notifyAll();
+            }
+        for (BlockingQueue<MicroService> subscribed : broadcastList.values())
+            synchronized (broadcastKey) {
+                subscribed.remove(m);
+                broadcastKey.notifyAll();
+            }
+        queues.remove(m); // only one ms can unregister itself
     }
 
     /**

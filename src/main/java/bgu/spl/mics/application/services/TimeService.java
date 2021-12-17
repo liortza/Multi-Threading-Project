@@ -5,6 +5,7 @@ import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.ReadyBroadcast;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 
 import java.util.Timer;
@@ -26,6 +27,7 @@ public class TimeService extends MicroService {
     private final int duration;
     private int notReadyServices;
     private Timer timer;
+    private boolean ready = false;
 
     public TimeService(int speed, int duration, int notReadyServices) {
         super("TimeService");
@@ -38,6 +40,11 @@ public class TimeService extends MicroService {
     protected void initialize() {
         Callback<ReadyBroadcast> readyCallback = ((ReadyBroadcast b) -> handleReadyBroadcast());
         subscribeBroadcast(ReadyBroadcast.class, readyCallback);
+        ready = true;
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 
     private void handleReadyBroadcast() { // wait for all services to register and subscribe
@@ -65,6 +72,7 @@ public class TimeService extends MicroService {
     private void sendTerminateBroadcast() {
         System.out.println(getName() + " is sending termination broadcast");
         timer.cancel();
+        sendBroadcast(new TerminateBroadcast());
         terminate();
     }
 }

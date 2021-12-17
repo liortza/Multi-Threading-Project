@@ -16,15 +16,15 @@ public class CPU {
     private static int id = 0;
     private int currentTick = 0;
 
-    private int cores;
+    private final int cores;
     private Queue<DataBatch> incoming = new LinkedList<>();
     private DataBatch current = null;
     private int ticksRemaining = 0;
-    private int capacity;
-    private Cluster cluster = Cluster.getInstance();
+    private final int capacity;
+    private final Cluster cluster = Cluster.getInstance();
     private int ticksUsed = 0;
     private int processedBatches = 0;
-    private int myId;
+    private final int myId;
 
     public CPU(int cores) {
         this.cores = cores;
@@ -40,7 +40,6 @@ public class CPU {
      * @pre none
      * @post currentTick == @pre(currentTick) + 1
      */
-
     public void updateTick() {
         currentTick++;
         if (current != null & ticksRemaining == 0) { // finished processing batch
@@ -64,33 +63,6 @@ public class CPU {
             ticksRemaining = (32 / cores) * (current.getTickFactor()) - 1; // use current tick for process
         }
     }
-
-    /**
-     * @pre !incoming.isEmpty()
-     * @post outgoing.size() = @pre(outgoing.size) + @pre(incoming.size())
-     * @post ticksUsed > @pre(ticksUsed)
-     */
-//    public void processData() {
-//        if (incoming.isEmpty()) throw new IllegalStateException("Cannot process Data with empty incoming queue");
-//        while (!incoming.isEmpty()) {
-//
-//        }
-//        // if incoming is empty
-//        // cpu service should bring more data
-//        // cluster.incomingBatchFromCPU();
-//    }
-
-//    public void addToIncoming(DataBatch dataBatch) { // used for tests
-//        incoming.add(dataBatch);
-//    }
-//
-//    public int getIncomingSize() { // used for tests
-//        return incoming.size();
-//    }
-//
-//    public int getCurrentTick() { // used for tests
-//        return currentTick;
-//    }
 
     public int getTicksUsed() { // used for tests
         return ticksUsed;

@@ -1,13 +1,8 @@
 package bgu.spl.mics.application.objects;
 
-
-import sun.misc.Cleaner;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -87,19 +82,25 @@ public class Cluster {
 
     public int gpuTicksUsed() {
         int total = 0;
-        for (GPU gpu : gpus) total += gpu.getTicksUsed();
+        for (GPU gpu : gpus) {
+            total += gpu.getTicksUsed();
+        }
         return total;
     }
 
     public int cpuTicksUsed() {
         int total = 0;
-        for (CPU cpu : cpus) total += cpu.getTicksUsed();
+        for (CPU cpu : cpus) {
+            total += cpu.getTicksUsed();
+        }
         return total;
     }
 
     public int cpuTotalProcessedBatches() {
         int total = 0;
-        for (CPU cpu : cpus) total += cpu.getProcessedBatches();
+        for (CPU cpu : cpus) {
+            total += cpu.getProcessedBatches();
+        }
         return total;
     }
 

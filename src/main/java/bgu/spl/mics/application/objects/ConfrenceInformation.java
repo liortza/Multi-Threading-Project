@@ -17,10 +17,11 @@ public class ConfrenceInformation {
     public ConfrenceInformation(String name, int date) {
         this.name = name;
         this.date = date;
-        // new ConferenceService(name, this);
     }
 
-    public void init() { models = new LinkedList<>(); }
+    public void init() {
+        models = new LinkedList<>();
+    }
 
     public int getDate() {
         return date;
@@ -35,6 +36,8 @@ public class ConfrenceInformation {
         return models;
     }
 
-    public String getName(){ return name; }
+    public String getName() {
+        return name;
+    }
 
 }

@@ -20,11 +20,11 @@ import java.util.concurrent.TimeUnit;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    private Student myStudent;
+    private final Student myStudent;
     private Model current = null;
     private Future<Model> trainFuture;
     private Future<Model.Status> testFuture;
-    private HashMap<Model, Future<Boolean>> publishFutures;
+    private final HashMap<Model, Future<Boolean>> publishFutures = new HashMap<>();
 
     public StudentService(String name, Student myStudent) {
         super(name);
@@ -69,20 +69,22 @@ public class StudentService extends MicroService {
 
     private void sendPublishEvent() {
         PublishResultsEvent publishEvent = null;
-        Model.Status status;
-        try {
-            status = testFuture.get(); // TODO: try/catch ok?? --- while??
-        } catch (InterruptedException e) {
-            status = testFuture.get(1, TimeUnit.MILLISECONDS);
+        Model.Status status = null;
+        if (testFuture.isDone()) { // get test result
+            try {
+                status = testFuture.get();
+            } catch (InterruptedException e) {}
+        } if (status != null) {
+            if (status == Model.Status.Good) {
+                System.out.println(getName() + " is sending PublishEvent");
+                publishEvent = new PublishResultsEvent(current, status);
+                publishFutures.put(current, sendEvent(publishEvent));
+            }
+            // reset futures for next model loop
+            current = null;
+            trainFuture = null;
+            testFuture = null;
         }
-        if (status == Model.Status.Good) {
-            System.out.println(getName() + " is sending PublishEvent: " + current.getName());
-            publishEvent = new PublishResultsEvent(current, status);
-            publishFutures.put(current, sendEvent(publishEvent));
-        }
-        current = null;
-        trainFuture = null;
-        testFuture = null;
     }
 
     private void updateTick() {

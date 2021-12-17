@@ -29,7 +29,7 @@ import java.util.LinkedList;
 public class CRMSRunner {
     static Student[] students;
     static ConfrenceInformation[] conferences;
-    static Cluster cluster = new Cluster();
+    static Cluster cluster = Cluster.getInstance();
     static LinkedList<MicroService> services = new LinkedList<>();
     static LinkedList<Thread> threads = new LinkedList<>();
 
@@ -48,8 +48,6 @@ public class CRMSRunner {
                 services.add(studentService);
                 threads.add(studentT);
             }
-
-            Cluster cluster = Cluster.getInstance();
 
             for (String type : input.getGpus()) {
                 GPU gpu = new GPU(type);
@@ -89,9 +87,11 @@ public class CRMSRunner {
             services.add(ts);
             timeT.start();
 
-            try {
-                Thread.sleep(50); // wait for timeService to subscribe to ReadyBroadcast
-            } catch (InterruptedException e) {}
+            while (!ts.isReady()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {};
+            }
 
             for (Thread t: threads) t.start();
 

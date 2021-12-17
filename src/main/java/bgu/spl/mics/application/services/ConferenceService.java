@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class ConferenceService extends MicroService {
     private ConfrenceInformation myConference;
     private int currentTick;
-    private ArrayList<PublishResultsEvent> publishEvents = new ArrayList<>();
+    private final ArrayList<PublishResultsEvent> publishEvents = new ArrayList<>();
 
     public ConferenceService(String name, ConfrenceInformation myConference) {
         super(name);
@@ -46,8 +46,12 @@ public class ConferenceService extends MicroService {
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {
+        System.out.println(getName() + " got publish event for: " + event.getModel().getName());
         myConference.addModel(event.getModel()); // only "Good" models are sent
-        publishEvents.add(event);
+        synchronized (publishEvents) {
+            publishEvents.add(event);
+            publishEvents.notifyAll();
+        }
     }
 
     private void updateTick() {
@@ -63,21 +67,19 @@ public class ConferenceService extends MicroService {
             m.publish();
         }
         for (PublishResultsEvent e : publishEvents) {
-            publishEvents.remove(e);
             complete(e, true);
         }
-
         for (Model m : myConference.getModels()) {
             System.out.print(m.getName() + ", ");
         }
         System.out.println("");
 
         sendBroadcast(broadcast);
+        terminate();
     }
 
     private void terminateConference() {
         for (PublishResultsEvent e : publishEvents) complete(e, false); // didn't publish
-        System.out.println("conf: " + getName() + " is terminating");
         terminate();
     }
 }
