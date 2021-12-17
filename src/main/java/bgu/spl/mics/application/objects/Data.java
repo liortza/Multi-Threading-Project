@@ -37,11 +37,11 @@ public class Data {
     public Data.Type getType() { return type; }
 
     public String getTypeS() {
-    if(type==type.Images)
-        return "Images";
-    else if (type==type.Tabular)
-        return "Tabular";
-    else return "Text";
+        if(type==type.Images)
+            return "Images";
+        else if (type==type.Tabular)
+            return "Tabular";
+        else return "Text";
     }
 
     public int getSize() { return size; }
