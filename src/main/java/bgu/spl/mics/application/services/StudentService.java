@@ -71,7 +71,7 @@ public class StudentService extends MicroService {
         PublishResultsEvent publishEvent = null;
         Model.Status status;
         try {
-            status = testFuture.get(); // TODO: try/catch ok??
+            status = testFuture.get(); // TODO: try/catch ok?? --- while??
         } catch (InterruptedException e) {
             status = testFuture.get(1, TimeUnit.MILLISECONDS);
         }

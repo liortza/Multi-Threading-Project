@@ -131,7 +131,10 @@ public class MessageBusImpl implements MessageBus {
                 eventList.get(e.getClass()).notifyAll();
             }
             future = new Future<>(); // TODO: check thread safe
-            futuresList.put(e, future);
+            synchronized (futuresList) {
+                futuresList.put(e, future);
+                futuresList.notifyAll();
+            }
         }
         return future;
     }
@@ -179,6 +182,7 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public Message awaitMessage(MicroService m) throws InterruptedException {
+        if (!isRegistered(m)) throw new IllegalStateException("Microservice must be registered before await");
         return queues.get(m).take(); // blocks m if queue is empty
     }
 

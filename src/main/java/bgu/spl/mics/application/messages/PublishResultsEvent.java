@@ -9,7 +9,7 @@ public class PublishResultsEvent implements Event<Boolean> {
 
     public PublishResultsEvent(Model model, Model.Status status) {
         this.model = model;
-        this.status = status;
+        this.status = status; // todo: delete
     }
 
     public Model getModel() {

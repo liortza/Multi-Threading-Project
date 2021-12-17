@@ -52,18 +52,22 @@ public class ConferenceService extends MicroService {
 
     private void updateTick() {
         currentTick++;
-        if (currentTick == myConference.getDate()) { publishConferenceBroadcast(); }
+        if (currentTick == myConference.getDate()) {
+            publishConferenceBroadcast();
+        }
     }
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
-        for (Model m: myConference.getModels()) m.publish();
-        for (PublishResultsEvent e: publishEvents) {
+        for (Model m : myConference.getModels()) {
+            m.publish();
+        }
+        for (PublishResultsEvent e : publishEvents) {
             publishEvents.remove(e);
             complete(e, true);
         }
 
-        for (Model m: myConference.getModels()) {
+        for (Model m : myConference.getModels()) {
             System.out.print(m.getName() + ", ");
         }
         System.out.println("");
@@ -72,7 +76,7 @@ public class ConferenceService extends MicroService {
     }
 
     private void terminateConference() {
-        for (PublishResultsEvent e: publishEvents) complete(e, false); // didn't publish
+        for (PublishResultsEvent e : publishEvents) complete(e, false); // didn't publish
         System.out.println("conf: " + getName() + " is terminating");
         terminate();
     }

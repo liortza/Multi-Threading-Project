@@ -12,7 +12,7 @@ public class ConfrenceInformation {
 
     private String name;
     private int date;
-    private LinkedList<Model> models = new LinkedList<>();
+    private LinkedList<Model> models;
 
     public ConfrenceInformation(String name, int date) {
         this.name = name;
@@ -20,11 +20,14 @@ public class ConfrenceInformation {
         // new ConferenceService(name, this);
     }
 
+    public void init() { models = new LinkedList<>(); }
+
     public int getDate() {
         return date;
     }
 
     public void addModel(Model m) {
+        if (m == null) throw new IllegalArgumentException("Model is null");
         models.add(m);
     }
 

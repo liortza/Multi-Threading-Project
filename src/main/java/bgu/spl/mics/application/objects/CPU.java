@@ -28,11 +28,13 @@ public class CPU {
 
     public CPU(int cores) {
         this.cores = cores;
-        capacity = cores; // TODO: see how to define capacity
+        capacity = cores / 2; // TODO: see how to define capacity
         myId = id;
         id++;
         // new CPUService(String.valueOf(myId), this);
     }
+
+    public int getCapacity() { return capacity; }
 
     /**
      * @pre none
@@ -41,14 +43,13 @@ public class CPU {
 
     public void updateTick() {
         currentTick++;
-        if (current != null & ticksRemaining == 1) { // finished processing batch
+        if (current != null & ticksRemaining == 0) { // finished processing batch
             current.process();
             System.out.println(getName() + " finished processing batch");
             processedBatches++;
             cluster.incomingBatchFromCPU(current);
             prepareNext();
-        } else if (current != null & ticksRemaining > 1) { // during process
-            System.out.println(getName() + " during process, " + ticksRemaining + " ticks remaining");
+        } else if (current != null & ticksRemaining > 0) { // during process
             ticksRemaining--;
             ticksUsed++;
         } else prepareNext();
@@ -57,10 +58,10 @@ public class CPU {
     public void prepareNext() {
         if (incoming.isEmpty()) {
             current = null;
-            incoming = cluster.fetchUnprocessedDataCPU(cores / 2);
+            incoming = cluster.fetchUnprocessedDataCPU(capacity);
         } if (!incoming.isEmpty()) { // fetch successful
             current = incoming.remove();
-            ticksRemaining = (32 / cores) * (current.getTickFactor());
+            ticksRemaining = (32 / cores) * (current.getTickFactor()) - 1; // use current tick for process
         }
     }
 

@@ -65,6 +65,10 @@ public class GPU {
         // cluster.registerGPU(this);
     }
 
+    public void setMyService(GPUService service) {
+        myService = service;
+    }
+
 //    public void init() {
 //        if (gpuType.equals("RTX3090")) {
 //            this.type = Type.RTX3090;
@@ -94,19 +98,19 @@ public class GPU {
      */
     public void updateTick() {
         currentTick++;
+        System.out.println(getName() + ": " + disc.size() + " in disc");
         if (model != null) { // currently training a model
             if (current != null & ticksRemaining == 1) { // finished training a batch
-                System.out.println(getName() + " finished training a batch");
+                System.out.println(getName() + " trained batch");
                 prepareNext();
                 remainingModelBatches--;
                 if (remainingModelBatches == 0) { // finished training model
-                    System.out.println(getName() + " finished training model: " + model.getName());
+                    System.out.println(getName() + " trained model: " + model.getName());
                     model.train();
                     myService.completeEvent(trainEvent, model);
                     cluster.addTrained(model.getName());
                 }
             } else if (current != null & ticksRemaining > 1) { // during training
-                System.out.println(getName() + " during training, " + ticksRemaining + " ticks remaining");
                 ticksRemaining--;
                 ticksUsed++;
             } else prepareNext();
@@ -117,16 +121,19 @@ public class GPU {
                 if (m instanceof TestModelEvent) {
                     System.out.println(getName() + " testing model: " + model.getName());
                     testModel((TestModelEvent) m);
-                } else { prepareModelForTraining((TrainModelEvent) m); }
+                } else {
+                    prepareModelForTraining((TrainModelEvent) m);
+                }
             }
         }
-        sendBatchesToCluster();
+        //sendBatchesToCluster();
+        offerBatchesToCluster();
     }
 
     public void prepareNext() {
         if (vRam.isEmpty()) {
             current = null;
-            cluster.fetchProcessedDataGPU(vRamCapacity, this);
+            vRam = cluster.fetchProcessedDataGPU(vRamCapacity, this);
         }
         if (!vRam.isEmpty()) { // fetch successful
             current = vRam.remove();
@@ -164,28 +171,33 @@ public class GPU {
     public void prepareBatches(Data data) {
         if (data == null) throw new IllegalArgumentException("cannot prepare batches from null data");
         remainingModelBatches = data.getSize() / 1000;
-        for (int i = 0; i < data.getSize() / 1000; i += 1000) {
+        for (int i = 0; i < data.getSize(); i += 1000) {
             disc.add(new DataBatch(data, i, this));
         }
     }
 
     /**
-     * @param numOfBatches > 0
      * @pre none
      * @post disc.size() == max{0, @pre(disc.size()) - numOfBatches}
      */
-    public void sendBatchesToCluster() {
-        System.out.println(getName() + " sent batches to cluster");
-        Queue<DataBatch> toCluster = new LinkedList<>();
+//    public void sendBatchesToCluster() {
+//        Queue<DataBatch> toCluster = new LinkedList<>();
+//        for (int i = 0; i < batchesToCluster & !disc.isEmpty(); i++) {
+//            toCluster.add(disc.remove());
+//        }
+//        System.out.println(getName() + " sent " + toCluster.size() + " batches to cluster");
+//        cluster.incomingDataFromGPU(toCluster);
+//    }
+    public void offerBatchesToCluster() {
         for (int i = 0; i < batchesToCluster & !disc.isEmpty(); i++) {
-            toCluster.add(disc.remove());
+            DataBatch batch = disc.peek();
+            if (cluster.incomingBatchFromGPU(batch)) disc.remove(); // offer successful
         }
-        cluster.incomingDataFromGPU(toCluster);
     }
 
-    private void fetchProcessedFromCluster() {
-        vRam = cluster.fetchProcessedDataGPU(vRamCapacity, this); // vRam is empty before this method
-    }
+//    private void fetchProcessedFromCluster() {
+//        vRam = cluster.fetchProcessedDataGPU(vRamCapacity, this); // vRam is empty before this method
+//    }
 
 //    /**
 //     * @pre !vRam.isEmpty()
@@ -223,7 +235,9 @@ public class GPU {
 //        return currentTick;
 //    }
 
-    public String getName() { return "GPU" + myId; }
+    public String getName() {
+        return "GPU" + myId;
+    }
 
     public Model getModel() {
         return model;

@@ -27,7 +27,7 @@ public class Cluster {
     private final BlockingQueue<GPU> gpus = new LinkedBlockingQueue<>();
     private final BlockingQueue<CPU> cpus = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> trainedModels = new LinkedBlockingQueue<>();
-    private final BlockingQueue<DataBatch> unprocessed = new LinkedBlockingQueue<>();
+    private BlockingQueue<DataBatch> unprocessed;
     private final HashMap<GPU, Queue<DataBatch>> gpuQueues = new HashMap<>();
 
     public Cluster() {}
@@ -39,6 +39,10 @@ public class Cluster {
         return ClusterHolder.instance;
     }
 
+    public void init(int cpuCapacities) {
+        unprocessed = new LinkedBlockingQueue<>(cpuCapacities);
+    }
+
     public void registerGPU(GPU gpu) {
         gpus.add(gpu);
         gpuQueues.put(gpu, new LinkedBlockingQueue<>());
@@ -48,8 +52,12 @@ public class Cluster {
         cpus.add(cpu);
     }
 
-    public void incomingDataFromGPU(Queue<DataBatch> batches) {
-        unprocessed.addAll(batches); // TODO: check if need to sync? because of cpu pulling from same queue
+//    public void incomingDataFromGPU(Queue<DataBatch> batches) {
+//        unprocessed.addAll(batches); // TODO: check if need to sync? because of cpu pulling from same queue
+//    }
+
+    public boolean incomingBatchFromGPU(DataBatch batch) {
+        return unprocessed.offer(batch);
     }
 
     public Queue<DataBatch> fetchProcessedDataGPU(int dataBatches, GPU gpu) {
@@ -68,6 +76,7 @@ public class Cluster {
                 toCPU.add(unprocessed.remove());
             }
         }
+        System.out.println("cluster unprocessed size: " + unprocessed.size());
         return toCPU;
     }
 

@@ -55,13 +55,16 @@ public class CRMSRunner {
                 GPU gpu = new GPU(type);
                 cluster.registerGPU(gpu);
                 GPUService gpuService = new GPUService(gpu.getName(), gpu);
+                gpu.setMyService(gpuService);
                 Thread gpuT = new Thread(gpuService);
                 services.add(gpuService);
                 threads.add(gpuT);
             }
 
+            int cpuCapacities = 0;
             for (int cores : input.getCpus()) {
                 CPU cpu = new CPU(cores);
+                cpuCapacities += cpu.getCapacity();
                 cluster.registerCPU(cpu);
                 CPUService cpuService = new CPUService(cpu.getName(), cpu);
                 Thread cpuT = new Thread(cpuService);
@@ -69,8 +72,11 @@ public class CRMSRunner {
                 threads.add(cpuT);
             }
 
+            cluster.init(cpuCapacities);
+
             conferences = input.getConferences();
             for (ConfrenceInformation cInfo : conferences) {
+                cInfo.init();
                 ConferenceService confService = new ConferenceService(cInfo.getName(), cInfo);
                 Thread confT = new Thread(confService);
                 services.add(confService);
