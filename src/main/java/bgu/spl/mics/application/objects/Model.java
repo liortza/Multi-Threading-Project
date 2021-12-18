@@ -79,7 +79,7 @@ public class Model {
         else return "None";
     }
 
-    public void tested(){ tested="Tasted"; }
+    public void tested(){ tested="Tested"; }
 
     public String getTested(){ return tested; }
 }
