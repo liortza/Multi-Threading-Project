@@ -94,6 +94,7 @@ public class CRMSRunner {
             }
 
             for (Thread t: threads) t.start();
+            threads.add(timeT);
 
         } catch (IOException e) {
             System.out.println("caught exception");
@@ -107,7 +108,6 @@ public class CRMSRunner {
         }
 
         Output();
-
     }
 
     private static void Output() {

@@ -58,19 +58,21 @@ public class StudentService extends MicroService {
     }
 
     private void sendTestEvent() {
-        TestModelEvent testEvent = null;
-        try { // TODO: fix try/catch
-            testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
-            System.out.println(getName() + " is sending TestEvent: " + current.getName());
-        } catch (InterruptedException e) {
+        if (trainFuture.isDone()) { // trainFuture.get() doesn't block
+            TestModelEvent testEvent = null;
+            try {
+                testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
+                System.out.println(getName() + " is sending TestEvent: " + current.getName());
+            } catch (InterruptedException e) {
+            }
+            testFuture = sendEvent(testEvent);
         }
-        testFuture = sendEvent(testEvent);
     }
 
     private void sendPublishEvent() {
-        PublishResultsEvent publishEvent = null;
+        PublishResultsEvent publishEvent;
         Model.Status status = null;
-        if (testFuture.isDone()) { // get test result
+        if (testFuture.isDone()) { // testFuture.get() doesn't block
             try {
                 status = testFuture.get();
             } catch (InterruptedException e) {}

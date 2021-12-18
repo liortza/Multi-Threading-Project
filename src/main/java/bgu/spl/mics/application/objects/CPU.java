@@ -31,7 +31,6 @@ public class CPU {
         capacity = cores / 2; // TODO: see how to define capacity
         myId = id;
         id++;
-        // new CPUService(String.valueOf(myId), this);
     }
 
     public int getCapacity() { return capacity; }
@@ -44,7 +43,6 @@ public class CPU {
         currentTick++;
         if (current != null & ticksRemaining == 0) { // finished processing batch
             current.process();
-            System.out.println(getName() + " finished processing batch");
             processedBatches++;
             cluster.incomingBatchFromCPU(current);
             prepareNext();
@@ -58,7 +56,7 @@ public class CPU {
         if (incoming.isEmpty()) {
             current = null;
             incoming = cluster.fetchUnprocessedDataCPU(capacity);
-        } if (!incoming.isEmpty()) { // fetch successful
+        } if (!incoming.isEmpty()) { // has next batch to process
             current = incoming.remove();
             ticksRemaining = (32 / cores) * (current.getTickFactor()) - 1; // use current tick for process
         }

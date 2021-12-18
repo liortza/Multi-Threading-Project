@@ -63,17 +63,15 @@ public class ConferenceService extends MicroService {
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
+        System.out.print(getName() + " is publishing. models: ");
         for (Model m : myConference.getModels()) {
             m.publish();
+            System.out.print(m.getName() + ", ");
         }
         for (PublishResultsEvent e : publishEvents) {
             complete(e, true);
         }
-        for (Model m : myConference.getModels()) {
-            System.out.print(m.getName() + ", ");
-        }
         System.out.println("");
-
         sendBroadcast(broadcast);
         terminate();
     }

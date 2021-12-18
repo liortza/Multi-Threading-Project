@@ -97,7 +97,8 @@ public class MessageBusImpl implements MessageBus {
             BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
             for (MicroService ms : subscribers) {
                 synchronized (broadcastKey) {
-                    if (queues.containsKey(ms)) queues.get(ms).add(b);
+                    //if (queues.containsKey(ms)) queues.get(ms).add(b); // todo: need the if?
+                    queues.get(ms).add(b);
                     broadcastKey.notifyAll();
                 }
             }
@@ -119,8 +120,8 @@ public class MessageBusImpl implements MessageBus {
             synchronized (eventKey) {
                 MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
                 queues.get(recipient).add(e);
-                eventKey.notifyAll();
                 eventList.get(e.getClass()).add(recipient); // add to end of queue
+                eventKey.notifyAll();
             }
             future = new Future<>();
             futuresList.put(e, future);
@@ -154,16 +155,18 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void unregister(MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService is not registered");
-        for (BlockingQueue<MicroService> subscribed : eventList.values())
-            synchronized (eventKey) {
+        synchronized (eventKey) {
+            for (BlockingQueue<MicroService> subscribed : eventList.values()) {
                 subscribed.remove(m);
                 eventKey.notifyAll();
             }
-        for (BlockingQueue<MicroService> subscribed : broadcastList.values())
-            synchronized (broadcastKey) {
+        }
+        synchronized (broadcastKey) {
+            for (BlockingQueue<MicroService> subscribed : broadcastList.values()) {
                 subscribed.remove(m);
                 broadcastKey.notifyAll();
             }
+        }
         queues.remove(m); // only one ms can unregister itself
     }
 

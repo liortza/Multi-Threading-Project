@@ -71,7 +71,7 @@ public class Cluster {
                 toCPU.add(unprocessed.remove());
             }
         }
-        System.out.println("cluster unprocessed size: " + unprocessed.size());
+        // System.out.println("cluster unprocessed size: " + unprocessed.size());
         return toCPU;
     }
 

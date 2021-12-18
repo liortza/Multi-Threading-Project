@@ -17,7 +17,7 @@ public class Model {
     private Data data;
     private Student student;
     private boolean trained = false, published = false;
-    private String tested= "NotTested";
+    private String tested = "NotTested";
 
     public Model(String name, Data data) {
         this.name = name;
@@ -51,9 +51,13 @@ public class Model {
         return status;
     }
 
-    public Data getData() { return data; }
+    public Data getData() {
+        return data;
+    }
 
-    public Student getStudent() { return student; }
+    public Student getStudent() {
+        return student;
+    }
 
     public void setStatus(Status status) {
         this.status = status;
@@ -67,19 +71,27 @@ public class Model {
         trained = true;
     }
 
-    public void publish() { published = true; }
+    public void publish() {
+        published = true;
+    }
 
-    public boolean isPublished() { return published; }
+    public boolean isPublished() {
+        return published;
+    }
 
     public String getResults() {
-        if(status==status.Good)
+        if (status == status.Good)
             return "Good";
-        else if(status==status.Bad)
+        else if (status == status.Bad)
             return "Bad";
         else return "None";
     }
 
-    public void tested(){ tested="Tasted"; }
+    public void tested() {
+        tested = "Tested";
+    }
 
-    public String getTested(){ return tested; }
+    public String getTested() {
+        return tested;
+    }
 }
