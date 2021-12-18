@@ -104,7 +104,7 @@ public class CRMSRunner {
         for (Thread t : threads) {
             try {
                 t.join();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException ignored) {}
         }
 
         Output();
