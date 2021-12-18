@@ -159,7 +159,7 @@ public class CRMSRunner {
             conference.addProperty("name", CRMSRunner.conferences[i].getName());
             conference.addProperty("Date", CRMSRunner.conferences[i].getDate());
             //conference publications
-            JsonObject publications = new JsonObject();
+            JsonArray publications = new JsonArray();
             LinkedList<Model> conferencePublications = CRMSRunner.conferences[i].getModels();
             for (int j = 0;conferencePublications!=null && j < conferencePublications.size(); j++) {
                 //create model
@@ -174,7 +174,7 @@ public class CRMSRunner {
                 //continue model
                 CModel.addProperty("status", conferencePublications.get(j).getTested());
                 CModel.addProperty("results", conferencePublications.get(j).getResults());
-                publications.add("",CModel);
+                publications.add(CModel);
             }
             conference.add("publications",publications);
             conferences.add(conference);
