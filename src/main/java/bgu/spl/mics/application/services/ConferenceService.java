@@ -6,7 +6,6 @@ import bgu.spl.mics.application.objects.ConfrenceInformation;
 import bgu.spl.mics.application.objects.Model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Conference service is in charge of
@@ -18,7 +17,7 @@ import java.util.HashMap;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class ConferenceService extends MicroService {
-    private ConfrenceInformation myConference;
+    private final ConfrenceInformation myConference;
     private int currentTick;
     private final ArrayList<PublishResultsEvent> publishEvents = new ArrayList<>();
 
@@ -63,17 +62,15 @@ public class ConferenceService extends MicroService {
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
+        System.out.print(getName() + " is publishing. models: ");
         for (Model m : myConference.getModels()) {
             m.publish();
+            System.out.print(m.getName() + ", ");
         }
         for (PublishResultsEvent e : publishEvents) {
             complete(e, true);
         }
-        for (Model m : myConference.getModels()) {
-            System.out.print(m.getName() + ", ");
-        }
         System.out.println("");
-
         sendBroadcast(broadcast);
         terminate();
     }

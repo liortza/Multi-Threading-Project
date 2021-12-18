@@ -1,8 +1,6 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Callback;
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.ReadyBroadcast;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
@@ -22,11 +20,11 @@ import java.util.TimerTask;
  */
 public class TimeService extends MicroService {
 
-    private int tickCounter = 1;
+    private int tickCounter = 0;
     private final int speed;
     private final int duration;
     private int notReadyServices;
-    private Timer timer;
+    private final Timer timer;
     private boolean ready = false;
 
     public TimeService(int speed, int duration, int notReadyServices) {
@@ -34,6 +32,7 @@ public class TimeService extends MicroService {
         this.speed = speed;
         this.duration = duration;
         this.notReadyServices = notReadyServices;
+        timer = new Timer();
     }
 
     @Override
@@ -53,26 +52,24 @@ public class TimeService extends MicroService {
     }
 
     private void sendTicks() {
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
+        TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                if (tickCounter != duration) sendTickBroadcast();
+                if (tickCounter < duration) sendTickBroadcast();
                 else sendTerminateBroadcast();
             }
-        }, 0, speed);
+        };
+        timer.scheduleAtFixedRate(timerTask, 0, speed);
+        terminate();
     }
 
     private void sendTickBroadcast() {
-        System.out.println("**************** TickBroadcast #" + tickCounter + " ****************");
         sendBroadcast(new TickBroadcast());
         tickCounter++;
     }
 
     private void sendTerminateBroadcast() {
-        System.out.println(getName() + " is sending termination broadcast");
-        timer.cancel();
         sendBroadcast(new TerminateBroadcast());
-        terminate();
+        timer.cancel();
     }
 }
