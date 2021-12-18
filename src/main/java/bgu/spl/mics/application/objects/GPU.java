@@ -28,10 +28,13 @@ public class GPU {
     private GPUService myService;
 
     private String gpuType;
-    private Type type;
+    private final Type type;
     private Model currentModel = null;
     private int remainingModelBatches;
-    private int batchesToCluster, vRamCapacity, tickFactor, myId;
+    private final int batchesToCluster;
+    private final int vRamCapacity;
+    private final int tickFactor;
+    private final int myId;
     private final Cluster cluster = Cluster.getInstance();
     private DataBatch currentBatch = null;
     private final Deque<Message> messageDeque = new ArrayDeque<>();
@@ -44,17 +47,14 @@ public class GPU {
         if (type.equals("RTX3090")) {
             this.type = Type.RTX3090;
             vRamCapacity = 32;
-            //batchesToCluster = 8;
             tickFactor = 1;
         } else if (type.equals("RTX2080")) {
             this.type = Type.RTX2080;
             vRamCapacity = 16;
-            //batchesToCluster = 4;
             tickFactor = 2;
         } else {
             this.type = Type.GTX1080;
             vRamCapacity = 8;
-            //batchesToCluster = 2;
             tickFactor = 4;
         }
         batchesToCluster = vRamCapacity / 2;
@@ -67,29 +67,6 @@ public class GPU {
         myService = service;
     }
 
-//    public void init() {
-//        if (gpuType.equals("RTX3090")) {
-//            this.type = Type.RTX3090;
-//            vRamCapacity = 32;
-//            batchesToCluster = 8;
-//            tickFactor = 1;
-//        } else if (gpuType.equals("RTX2080")) {
-//            this.type = Type.RTX2080;
-//            vRamCapacity = 16;
-//            batchesToCluster = 4;
-//            tickFactor = 2;
-//        } else {
-//            this.type = Type.GTX1080;
-//            vRamCapacity = 8;
-//            batchesToCluster = 2;
-//            tickFactor = 4;
-//        }
-//        vRam = new LinkedBlockingQueue<>(vRamCapacity);
-//        myId = ++id;
-//        // myService = new GPUService(String.valueOf(myId), this);
-//        cluster.registerGPU(this);
-//    }
-
     /**
      * @pre none
      * @post currentTick == @pre(currentTick) + 1
@@ -97,9 +74,7 @@ public class GPU {
     public void updateTick() {
         currentTick++;
         if (currentModel != null) { // currently training a model
-            // System.out.println(getName() + " is in the middle of training: " + currentModel.getName());
             if (currentBatch != null & ticksRemaining == 0) { // finished training a batch
-                // System.out.println(getName() + " trained batch");
                 prepareNext();
                 remainingModelBatches--;
                 if (remainingModelBatches == 0) { // finished training model
@@ -114,7 +89,6 @@ public class GPU {
                 ticksUsed++;
             } else prepareNext();
         } else { // test all models and start training next model
-            // System.out.println(getName() + " has " + messageDeque.size() + " messages in queue");
             Message m;
             while (!messageDeque.isEmpty() & currentModel == null) {
                 m = messageDeque.removeFirst();

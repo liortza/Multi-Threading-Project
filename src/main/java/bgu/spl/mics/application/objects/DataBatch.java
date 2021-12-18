@@ -6,17 +6,16 @@ package bgu.spl.mics.application.objects;
  */
 
 public class DataBatch {
-    private Data data;
-    private int startIndex;
-    private GPU myGPU;
-    private boolean processed, trained;
+    private final Data data;
+    private final int startIndex;
+    private final GPU myGPU;
+    private boolean processed;
 
     public DataBatch(Data data, int startIndex, GPU gpu) {
         this.data = data;
         this.startIndex = startIndex;
         myGPU = gpu;
         processed = false;
-        trained = false;
     }
 
     public boolean isProcessed() {
@@ -25,14 +24,6 @@ public class DataBatch {
 
     public void process() {
         processed = true;
-    }
-
-    public boolean isTrained() {
-        return trained;
-    }
-
-    public void setTrained () {
-        trained = true;
     }
 
     public int getTickFactor() { return data.getTickFactor(); }

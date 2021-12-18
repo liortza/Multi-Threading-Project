@@ -10,8 +10,8 @@ import java.util.LinkedList;
  */
 public class ConfrenceInformation {
 
-    private String name;
-    private int date;
+    private final String name;
+    private final int date;
     private LinkedList<Model> models;
 
     public ConfrenceInformation(String name, int date) {

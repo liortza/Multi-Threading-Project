@@ -47,10 +47,6 @@ public class Cluster {
         cpus.add(cpu);
     }
 
-//    public void incomingDataFromGPU(Queue<DataBatch> batches) {
-//        unprocessed.addAll(batches); // TODO: check if need to sync? because of cpu pulling from same queue
-//    }
-
     public boolean incomingBatchFromGPU(DataBatch batch) {
         return unprocessed.offer(batch);
     }
@@ -71,7 +67,6 @@ public class Cluster {
                 toCPU.add(unprocessed.remove());
             }
         }
-        // System.out.println("cluster unprocessed size: " + unprocessed.size());
         return toCPU;
     }
 

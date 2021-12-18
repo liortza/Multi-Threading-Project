@@ -1,8 +1,6 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Callback;
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.ReadyBroadcast;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
@@ -26,7 +24,7 @@ public class TimeService extends MicroService {
     private final int speed;
     private final int duration;
     private int notReadyServices;
-    private Timer timer;
+    private final Timer timer;
     private boolean ready = false;
 
     public TimeService(int speed, int duration, int notReadyServices) {

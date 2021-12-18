@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CPU {
 
     private static int id = 0;
-    private int currentTick = 0;
 
     private final int cores;
     private Queue<DataBatch> incoming = new LinkedList<>();
@@ -28,7 +27,7 @@ public class CPU {
 
     public CPU(int cores) {
         this.cores = cores;
-        capacity = cores / 2; // TODO: see how to define capacity
+        capacity = cores;
         myId = id;
         id++;
     }
@@ -40,7 +39,6 @@ public class CPU {
      * @post currentTick == @pre(currentTick) + 1
      */
     public void updateTick() {
-        currentTick++;
         if (current != null & ticksRemaining == 0) { // finished processing batch
             current.process();
             processedBatches++;

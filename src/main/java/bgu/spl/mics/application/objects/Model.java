@@ -11,7 +11,8 @@ public class Model {
         None, Good, Bad;
     }
 
-    private String name, type;
+    private final String name;
+    private String type;
     private int size;
     private Status status;
     private Data data;
@@ -24,15 +25,6 @@ public class Model {
         status = Status.None;
         this.data = data;
     }
-
-//    public Model(String name, String type, int size) {
-//        this.name = name;
-//        status = Status.None;
-//        Data.Type dataType = Data.Type.Images;
-//        if (type.equals("Tabular")) dataType = Data.Type.Tabular;
-//        else if (type.equals("Text")) dataType = Data.Type.Text;
-//        this.data = new Data(dataType, size);
-//    }
 
     public void init(Student student) {
         Data.Type type = Data.Type.Images;
@@ -80,9 +72,9 @@ public class Model {
     }
 
     public String getResults() {
-        if (status == status.Good)
+        if (status == Status.Good)
             return "Good";
-        else if (status == status.Bad)
+        else if (status == Status.Bad)
             return "Bad";
         else return "None";
     }

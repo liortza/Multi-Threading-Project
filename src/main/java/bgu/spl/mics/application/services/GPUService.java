@@ -14,7 +14,7 @@ import bgu.spl.mics.application.objects.GPU;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class GPUService extends MicroService {
-    private GPU gpu;
+    private final GPU gpu;
 
     public GPUService(String name, GPU myGpu) {
         super(name);
