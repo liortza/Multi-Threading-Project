@@ -13,6 +13,7 @@ import bgu.spl.mics.application.services.ConferenceService;
 import bgu.spl.mics.application.services.GPUService;
 import bgu.spl.mics.application.services.StudentService;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -179,11 +180,9 @@ public class CRMSRunner {
             conference.add("publications",publications);
             conferences.add(conference);
         }
-
-        try {
-            FileWriter file = new FileWriter("E:/output.json");
-            file.write(Output.toString());
-            file.close();
+        Gson gson= new GsonBuilder().setPrettyPrinting().create();
+        try(FileWriter file = new FileWriter("Output.json")) {
+          gson.toJson(Output,file);
         } catch (IOException e) {
         }
         System.out.println("JSON file created: " + Output);
