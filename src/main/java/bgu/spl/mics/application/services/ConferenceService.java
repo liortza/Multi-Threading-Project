@@ -67,7 +67,6 @@ public class ConferenceService extends MicroService {
         for (PublishResultsEvent e : publishEvents) {
             complete(e, true);
         }
-        System.out.println("");
         sendBroadcast(broadcast);
         terminate();
     }

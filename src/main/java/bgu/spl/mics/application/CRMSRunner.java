@@ -47,7 +47,6 @@ public class CRMSRunner {
         }
 
         assert input != null;
-        System.out.println(input);
         students = input.getStudents();
         for (Student s : students) {
             for (Model m : s.getModels()) m.init(s);
