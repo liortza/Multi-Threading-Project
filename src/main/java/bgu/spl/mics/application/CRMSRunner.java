@@ -193,6 +193,5 @@ public class CRMSRunner {
             gson.toJson(Output, file);
         } catch (IOException e) {
         }
-        System.out.println("JSON file created: " + Output);
     }
 }
