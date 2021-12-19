@@ -45,7 +45,6 @@ public class ConferenceService extends MicroService {
     }
 
     public void handlePublishEvent(PublishResultsEvent event) {
-        System.out.println(getName() + " got publish event for: " + event.getModel().getName());
         myConference.addModel(event.getModel()); // only "Good" models are sent
         synchronized (publishEvents) {
             publishEvents.add(event);
@@ -62,10 +61,8 @@ public class ConferenceService extends MicroService {
 
     private void publishConferenceBroadcast() {
         PublishConfrenceBroadcast broadcast = new PublishConfrenceBroadcast(myConference.getModels());
-        System.out.print(getName() + " is publishing. models: ");
         for (Model m : myConference.getModels()) {
             m.publish();
-            System.out.print(m.getName() + ", ");
         }
         for (PublishResultsEvent e : publishEvents) {
             complete(e, true);

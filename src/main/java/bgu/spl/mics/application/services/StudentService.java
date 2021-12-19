@@ -52,7 +52,6 @@ public class StudentService extends MicroService {
         current = myStudent.getNextModel();
         if (current != null) {
             TrainModelEvent trainEvent = new TrainModelEvent(getName(), current);
-            System.out.println(getName() + " is sending TrainEvent: " + current.getName());
             trainFuture = sendEvent(trainEvent);
         }
     }
@@ -62,7 +61,6 @@ public class StudentService extends MicroService {
             TestModelEvent testEvent = null;
             try {
                 testEvent = new TestModelEvent(getName(), trainFuture.get(), myStudent.getDegree());
-                System.out.println(getName() + " is sending TestEvent: " + current.getName());
             } catch (InterruptedException e) {
             }
             testFuture = sendEvent(testEvent);
@@ -78,7 +76,6 @@ public class StudentService extends MicroService {
             } catch (InterruptedException e) {}
         } if (status != null) {
             if (status == Model.Status.Good) {
-                System.out.println(getName() + " is sending PublishEvent");
                 publishEvent = new PublishResultsEvent(current, status);
                 publishFutures.put(current, sendEvent(publishEvent));
             }

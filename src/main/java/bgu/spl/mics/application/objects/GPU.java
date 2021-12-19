@@ -90,7 +90,6 @@ public class GPU {
                 prepareNext();
                 remainingModelBatches--;
                 if (remainingModelBatches == 0) { // finished training model
-                    System.out.println(getName() + " trained model: " + currentModel.getName() + " on tick " + currentTick);
                     currentModel.train();
                     myService.completeEvent(trainEvent, currentModel);
                     cluster.addTrained(currentModel.getName());
@@ -105,7 +104,6 @@ public class GPU {
             while (!messageDeque.isEmpty() & currentModel == null) {
                 m = messageDeque.removeFirst();
                 if (m instanceof TestModelEvent) {
-                    System.out.println(getName() + " testing model: " + ((TestModelEvent) m).getModel().getName() + " on tick " + currentTick);
                     testModel((TestModelEvent) m);
                 } else {
                     prepareModelForTraining((TrainModelEvent) m);
@@ -132,7 +130,6 @@ public class GPU {
      * @post messageDeque.size() = @pre(messageDeque.size()) + 1
      */
     public void handleTrainEvent(TrainModelEvent e) {
-        System.out.println(getName() + " received train event for: " + e.getModel().getName() + " on tick " + currentTick);
         messageDeque.addLast(e);
     }
 
@@ -141,7 +138,6 @@ public class GPU {
      * @post messageDeque.size() = @pre(messageDeque.size()) + 1
      */
     public void handleTestEvent(TestModelEvent e) {
-        System.out.println(getName() + " received test event for: " + e.getModel().getName() + " on tick " + currentTick);
         messageDeque.addFirst(e);
     }
 
@@ -179,7 +175,6 @@ public class GPU {
                 break;
         }
         e.getModel().tested();
-        System.out.println(getName() + " completed testing " + e.getModel().getName() + ". result: " + e.getModel().getStatus().toString());
         myService.completeEvent(e, e.getModel().getStatus());
     }
 
