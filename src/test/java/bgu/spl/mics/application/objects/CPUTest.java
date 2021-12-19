@@ -30,10 +30,8 @@ public class CPUTest {
         // case 1: finished processing batch
         cpu.setCurrent(batch);
         cpu.setTicksRemaining(0);
-        int currentTick = cpu.getCurrentTick();
         int batchedProcessed = cpu.getProcessedBatches();
         cpu.updateTick();
-        assertEquals(currentTick + 1, cpu.getCurrentTick());
         assertEquals(batchedProcessed + 1, cpu.getProcessedBatches());
 
         // case 2: during process
