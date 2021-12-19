@@ -38,7 +38,6 @@ public class CPU {
 
     /**
      * @pre none
-     * @post currentTick == @pre(currentTick) + 1
      * @post if @pre(current != null & ticksRemaining == 0) -> processedBatches = @pre(processedBatches) + 1
      * @post if @pre(current != null & ticksRemaining > 0) -> ticksRemaining = @pre(ticksRemaining) + 1
      * & ticksUsed = @pre(ticksUsed) + 1
@@ -79,10 +78,6 @@ public class CPU {
     }
 
     // region FOR TESTS
-    public int getCurrentTick() {
-        return currentTick;
-    }
-
     public void setCurrent(DataBatch batch) {
         current = batch;
     }
