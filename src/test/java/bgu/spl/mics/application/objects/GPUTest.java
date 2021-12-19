@@ -1,8 +1,8 @@
 package bgu.spl.mics.application.objects;
 
-import bgu.spl.mics.Event;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TrainModelEvent;
+import bgu.spl.mics.application.services.GPUService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 public class GPUTest {
     Cluster cluster = Cluster.getInstance();
     GPU gpu;
+    GPUService gpuService;
     Data data;
     DataBatch batch;
     Model model;
@@ -21,9 +22,15 @@ public class GPUTest {
     @Before
     public void setUp() throws Exception {
         gpu = new GPU("3090");
+        gpuService = new GPUService("gpuService", gpu);
+        gpu.setMyService(gpuService);
+        cluster.registerGPU(gpu);
+        cluster.init(10);
         data = new Data(Data.Type.Images, 1000);
         batch = new DataBatch(data, 0, gpu);
         model = new Model("gpuTest", data);
+        trainEvent = new TrainModelEvent("gpuTrain", model);
+        testEvent = new TestModelEvent("gpuTest", model, Student.Degree.PhD);
     }
 
     @After
@@ -35,17 +42,6 @@ public class GPUTest {
         int currentTick = gpu.getCurrentTick();
         gpu.updateTick();
         assertEquals(currentTick + 1, gpu.getCurrentTick());
-    }
-
-    @Test
-    public void updateTickFinishModel() {
-        gpu.setCurrentModel(model);
-        gpu.setCurrentBatch(batch);
-        gpu.setTicksRemaining(0);
-        gpu.setRemainingModelBatches(1);
-        assertFalse(model.isTrained());
-        gpu.updateTick();
-        assertTrue(model.isTrained());
     }
 
     @Test
@@ -77,26 +73,17 @@ public class GPUTest {
         gpu.setCurrentBatch(null);
         gpu.addToVRam(batch);
         int vRamSize = gpu.getVRamSize();
+        gpu.updateTick();
         assertNotNull(gpu.getCurrentBatch());
         assertEquals(vRamSize - 1, gpu.getVRamSize());
     }
 
     @Test
     public void updateTickNextTrain() {
-        gpu.setCurrentModel(null);
         gpu.addToMessageDequeue(trainEvent);
+        assertNull(gpu.getCurrentModel());
         gpu.updateTick();
-        assertNotNull(gpu.getCurrentModel());
-        assertEquals(data.getSize() / 1000, gpu.getDiscSize());
-    }
-
-    @Test
-    public void updateTickTest() {
-        gpu.setCurrentModel(null);
-        gpu.addToMessageDequeue(testEvent);
-        int messages = gpu.getMessageSize();
-        gpu.updateTick();
-        assertEquals(messages - 1, gpu.getMessageSize());
+        assertEquals(model, gpu.getCurrentModel());
     }
 
     @Test
