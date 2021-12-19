@@ -77,21 +77,21 @@ public class Future<T> {
      * elapsed, return null.
      */
     public T get(long timeout, TimeUnit unit) {
+        if (isResolved) return result;
         Thread t = new Thread(() -> {
             try {
                 unit.sleep(timeout);
             } catch (InterruptedException e) {
             }
-            this.notifyAll();
+            synchronized (this) {
+                this.notifyAll();
+            }
         });
         t.start();
-
         synchronized (this) {
-            while (result == null) {
-                try {
-                    this.wait();
-                } catch (InterruptedException e) {
-                }
+            try {
+                this.wait();
+            } catch (InterruptedException e) {
             }
         }
         return result;

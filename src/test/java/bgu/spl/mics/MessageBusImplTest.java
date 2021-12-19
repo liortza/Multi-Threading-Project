@@ -13,14 +13,13 @@ import static org.junit.Assert.*;
 
 public class MessageBusImplTest {
 
-    private static MessageBusImpl bus;
+    private static MessageBusImpl bus= (MessageBusImpl) MessageBusImpl.getInstance() ;
     private static MicroService m1, m2, m3, m4;
     private static Broadcast broadcast;
     private static Event<String> event;
 
     @Before
     public void setUp() throws Exception {
-        bus = new MessageBusImpl();
         m1 = new ExampleMessageSenderService("m1", new String[]{"broadcast"});
         m2 = new ExampleMessageSenderService("m2", new String[]{"event"});
         m3 = new ExampleBroadcastListenerService("m3", new String[]{"5"});
@@ -42,6 +41,7 @@ public class MessageBusImplTest {
             Message received = bus.awaitMessage(m4);
             assertEquals(event, received);
         } catch (InterruptedException e) {
+            System.out.println("here");
         }
         assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
     }
@@ -57,6 +57,7 @@ public class MessageBusImplTest {
         } catch (InterruptedException e) {
         }
         assertThrows("MicroService must be registered before subscribe", Exception.class, () -> bus.subscribeEvent(ExampleEvent.class, m1));
+        bus.unregister(m3);
     }
 
     @Test
@@ -79,6 +80,7 @@ public class MessageBusImplTest {
         catch (InterruptedException e){
         }
         assertEquals(result, "result");
+        bus.unregister(m4);
     }
 
 
@@ -88,6 +90,7 @@ public class MessageBusImplTest {
         bus.register(m1);
         assertTrue(bus.isRegistered(m1));
         assertThrows("MicroService is already registered", IllegalStateException.class, () -> bus.register(m1));
+        bus.unregister(m1);
     }
 
     @Test
