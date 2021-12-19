@@ -32,11 +32,17 @@ public class CPU {
         id++;
     }
 
-    public int getCapacity() { return capacity; }
+    public int getCapacity() {
+        return capacity;
+    }
 
     /**
      * @pre none
      * @post currentTick == @pre(currentTick) + 1
+     * @post if @pre(current != null & ticksRemaining == 0) -> processedBatches = @pre(processedBatches) + 1
+     * @post if @pre(current != null & ticksRemaining > 0) -> ticksRemaining = @pre(ticksRemaining) + 1
+     * & ticksUsed = @pre(ticksUsed) + 1
+     * @post if @pre(current == null & !incoming.isEmpty()) -> current != null
      */
     public void updateTick() {
         if (current != null & ticksRemaining == 0) { // finished processing batch
@@ -50,7 +56,7 @@ public class CPU {
         } else prepareNext();
     }
 
-    public void prepareNext() {
+    private void prepareNext() {
         if (incoming.isEmpty()) {
             current = null;
             incoming = cluster.fetchUnprocessedDataCPU(capacity);
@@ -68,5 +74,37 @@ public class CPU {
         return processedBatches;
     }
 
-    public String getName() { return "CPU" + myId; }
+    public String getName() {
+        return "CPU" + myId;
+    }
+
+    // region FOR TESTS
+    public int getCurrentTick() {
+        return currentTick;
+    }
+
+    public void setCurrent(DataBatch batch) {
+        current = batch;
+    }
+
+    public DataBatch getCurrent() {
+        return current;
+    }
+
+    public int getTicksRemaining() {
+        return ticksRemaining;
+    }
+
+    public void setTicksRemaining(int remaining) {
+        ticksRemaining = remaining;
+    }
+
+    public void addToIncoming(DataBatch batch) {
+        incoming.add(batch);
+    }
+
+    public int getIncomingSize() {
+        return incoming.size();
+    }
+    // endregion
 }

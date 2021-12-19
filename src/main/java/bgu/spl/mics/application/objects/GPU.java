@@ -70,6 +70,18 @@ public class GPU {
     /**
      * @pre none
      * @post currentTick == @pre(currentTick) + 1
+     * @post if @pre(currentModel != null & currentBatch != null & ticksRemaining == 0 & remainingModelBatches == 1)
+     * -> currentModel.isTrained() == true
+     * @post if @pre(currentModel != null & currentBatch != null & ticksRemaining == 0 & remainingModelBatches > 1)
+     * -> remainingModelBatches = @pre(remainingModelBatches) - 1
+     * @post if @pre(currentModel != null & currentBatch != null & ticksRemaining > 0)
+     * -> ticksRemaining = @pre(ticksRemaining) - 1 & ticksUsed = @pre(ticksUsed) + 1
+     * @post if @pre(currentModel != null & currentBatch == null & !vRam.isEmpty())
+     * -> currentBatch != null & vRam.size() = @pre(vRam.size()) - 1
+     * @post if @pre(currentModel == null & !messageDequeue.isEmpty() & messageDequeue.getFirst() is TrainEvent)
+     * -> messageDequeue.size() = @pre(messageDequeue.size()) - 1 & disc.size() = model.data.size() / 1000
+     * @post if @pre(currentModel == null & !messageDequeue.isEmpty() & messageDequeue.getFirst() is TestEvent)
+     * -> messageDequeue.size() < @pre(messageDequeue.size())
      */
     public void updateTick() {
         currentTick++;
@@ -103,7 +115,7 @@ public class GPU {
         if (!disc.isEmpty()) offerBatchesToCluster();
     }
 
-    public void prepareNext() {
+    private void prepareNext() {
         if (vRam.isEmpty()) {
             currentBatch = null;
             vRam = cluster.fetchProcessedDataGPU(vRamCapacity, this);
@@ -116,35 +128,30 @@ public class GPU {
     }
 
     /**
-     *
+     * @pre none
+     * @post messageDeque.size() = @pre(messageDeque.size()) + 1
      */
     public void handleTrainEvent(TrainModelEvent e) {
         System.out.println(getName() + " received train event for: " + e.getModel().getName() + " on tick " + currentTick);
         messageDeque.addLast(e);
     }
 
+    /**
+     * @pre none
+     * @post messageDeque.size() = @pre(messageDeque.size()) + 1
+     */
     public void handleTestEvent(TestModelEvent e) {
         System.out.println(getName() + " received test event for: " + e.getModel().getName() + " on tick " + currentTick);
         messageDeque.addFirst(e);
     }
 
-    /**
-     * @pre !trainEvent.model.isTrained()
-     * @post trainEvent.model.isTrained()
-     */
-    public <T> void prepareModelForTraining(TrainModelEvent e) {
+    private <T> void prepareModelForTraining(TrainModelEvent e) {
         trainEvent = e;
         currentModel = e.getModel();
         prepareBatches(currentModel.getData());
     }
 
-    /**
-     * @param data != null
-     * @pre numOfBatches == 0
-     * @post disc.size() = @pre(disc.size()) + model.data.size() / 1000
-     * @post numOfBatches == model.data.size() / 1000
-     */
-    public void prepareBatches(Data data) {
+    private void prepareBatches(Data data) {
         if (data == null) throw new IllegalArgumentException("cannot prepare batches from null data");
         remainingModelBatches = data.getSize() / 1000;
         for (int i = 0; i < data.getSize(); i += 1000) {
@@ -152,18 +159,14 @@ public class GPU {
         }
     }
 
-    public void offerBatchesToCluster() {
+    private void offerBatchesToCluster() {
         for (int i = 0; i < batchesToCluster & !disc.isEmpty(); i++) {
             DataBatch batch = disc.peek();
             if (cluster.incomingBatchFromGPU(batch)) disc.remove(); // offer successful
         }
     }
 
-    /**
-     * @pre trainEvent.model.isTrained() && trainEvent.model.status == "None"
-     * @post trainEvent.model.status == "Good" || trainEvent.model.status == "Bad"
-     */
-    public void testModel(TestModelEvent e) {
+    private void testModel(TestModelEvent e) {
         double rdm = Math.random();
         switch (e.getDegree()) {
             case MSc:
@@ -184,12 +187,49 @@ public class GPU {
         return "GPU" + myId;
     }
 
+    // region FOR TESTS
+    public int getCurrentTick() {
+        return currentTick;
+    }
+
+    public int getTicksRemaining() {
+        return ticksRemaining;
+    }
+
+    public void setTicksRemaining(int i) {
+        ticksRemaining = i;
+    }
+
+    public int getMessageSize() {
+        return messageDeque.size();
+    }
+
+    public void addToMessageDequeue(Message m) {
+        messageDeque.addFirst(m);
+    }
+
     public Model getCurrentModel() {
         return currentModel;
     }
 
+    public void setCurrentModel(Model m) {
+        currentModel = m;
+    }
+
+    public void setCurrentBatch(DataBatch batch) {
+        currentBatch = batch;
+    }
+
+    public DataBatch getCurrentBatch() {
+        return currentBatch;
+    }
+
     public int getRemainingModelBatches() {
         return remainingModelBatches;
+    }
+
+    public void setRemainingModelBatches(int i) {
+        remainingModelBatches = i;
     }
 
     public int getTicksUsed() {
@@ -200,15 +240,13 @@ public class GPU {
         return disc.size();
     }
 
-    public DataBatch getNextBatch() { // used for tests
-        return disc.remove();
-    }
-
     public void addToVRam(DataBatch dataBatch) { // used for tests
         vRam.add(dataBatch);
     }
 
-    public boolean vRamIsEmpty() { // used for tests
-        return vRam.isEmpty();
+    public int getVRamSize() {
+        return vRam.size();
     }
+
+    // endregion
 }
