@@ -62,15 +62,8 @@ public class CPU {
         } if (!incoming.isEmpty()) { // has next batch to process
             current = incoming.remove();
             ticksRemaining = (32 / cores) * (current.getTickFactor()) - 1; // use current tick for process
+            ticksUsed++;
         }
-    }
-
-    public int getTicksUsed() { // used for tests
-        return ticksUsed;
-    }
-
-    public int getProcessedBatches() {
-        return processedBatches;
     }
 
     public String getName() {
@@ -98,8 +91,12 @@ public class CPU {
         incoming.add(batch);
     }
 
-    public int getIncomingSize() {
-        return incoming.size();
+    public int getTicksUsed() { // used for tests
+        return ticksUsed;
+    }
+
+    public int getProcessedBatches() {
+        return processedBatches;
     }
     // endregion
 }

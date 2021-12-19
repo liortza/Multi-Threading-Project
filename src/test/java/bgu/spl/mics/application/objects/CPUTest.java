@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 
 public class CPUTest {
 
+    Cluster cluster = Cluster.getInstance();
     CPU cpu;
     GPU gpu;
     Data data;
@@ -17,6 +18,8 @@ public class CPUTest {
     public void setUp() throws Exception {
         cpu = new CPU(32);
         gpu = new GPU("3090");
+        cluster.registerGPU(gpu);
+        cluster.init(10);
         data = new Data(Data.Type.Images, 1000);
         batch = new DataBatch(data, 0, gpu);
     }
@@ -26,24 +29,27 @@ public class CPUTest {
     }
 
     @Test
-    public void updateTick() {
-        // case 1: finished processing batch
+    public void updateTickFinishBatch() {
         cpu.setCurrent(batch);
         cpu.setTicksRemaining(0);
-        int batchedProcessed = cpu.getProcessedBatches();
+        int batchesProcessed = cpu.getProcessedBatches();
         cpu.updateTick();
-        assertEquals(batchedProcessed + 1, cpu.getProcessedBatches());
+        assertEquals(batchesProcessed + 1, cpu.getProcessedBatches());
+    }
 
-        // case 2: during process
+    @Test
+    public void updateTickDuringProcess() {
         cpu.setCurrent(batch);
-        cpu.setTicksRemaining(0);
+        cpu.setTicksRemaining(4);
         int ticksUsed = cpu.getTicksUsed();
         int ticksRemaining = cpu.getTicksRemaining();
         cpu.updateTick();
         assertEquals(ticksUsed + 1, cpu.getTicksUsed());
         assertEquals(ticksRemaining - 1, cpu.getTicksRemaining());
+    }
 
-        // case 3: starting process of new batch
+    @Test
+    public void updateTickStartProcess() {
         cpu.setCurrent(null);
         cpu.addToIncoming(batch);
         cpu.updateTick();

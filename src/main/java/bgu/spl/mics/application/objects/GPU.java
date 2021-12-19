@@ -240,7 +240,7 @@ public class GPU {
         return disc.size();
     }
 
-    public void addToVRam(DataBatch dataBatch) { // used for tests
+    public void addToVRam(DataBatch dataBatch) {
         vRam.add(dataBatch);
     }
 
