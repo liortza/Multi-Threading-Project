@@ -83,7 +83,7 @@ public class FutureTest {
         });
         t2.start();
         long time3 = System.currentTimeMillis(); // time before sleep
-        int result2 = f1.get(500, TimeUnit.MILLISECONDS);
+        f1.get(500, TimeUnit.MILLISECONDS);
         long time4 = System.currentTimeMillis(); // time after sleep
         assertTrue(time4 - time3 < 550); // no more than 550 milliseconds passed
         assertFalse(f1.isDone());
