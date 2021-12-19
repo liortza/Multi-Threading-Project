@@ -12,9 +12,9 @@ public class Data {
         Images, Text, Tabular
     }
 
-    private Type type;
+    private final Type type;
     private int processed;
-    private int size;
+    private final int size;
     private int tickFactor;
 
     public Data(Type type, int size) {
@@ -34,17 +34,23 @@ public class Data {
         this.size = size;
     }
 
-    public Data.Type getType() { return type; }
+    public Data.Type getType() {
+        return type;
+    }
 
     public String getTypeS() {
-        if(type==type.Images)
+        if (type == Type.Images)
             return "Images";
-        else if (type==type.Tabular)
+        else if (type == Type.Tabular)
             return "Tabular";
         else return "Text";
     }
 
-    public int getSize() { return size; }
+    public int getSize() {
+        return size;
+    }
 
-    public int getTickFactor() { return tickFactor; }
+    public int getTickFactor() {
+        return tickFactor;
+    }
 }

@@ -16,7 +16,7 @@ public class MessageBusImpl implements MessageBus {
 
     private final ConcurrentHashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventList;
     private final ConcurrentHashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastList;
-    private final HashMap<MicroService, BlockingQueue<Message>> queues;
+    private final ConcurrentHashMap<MicroService, BlockingQueue<Message>> queues;
     private final ConcurrentHashMap<Event, Future> futuresList;
     private final Object eventKey = new Object(), broadcastKey = new Object();
 
@@ -27,7 +27,7 @@ public class MessageBusImpl implements MessageBus {
     public MessageBusImpl() {
         eventList = new ConcurrentHashMap<>();
         broadcastList = new ConcurrentHashMap<>();
-        queues = new HashMap<>();
+        queues = new ConcurrentHashMap<>();
         futuresList = new ConcurrentHashMap<>();
     }
 
@@ -94,10 +94,10 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void sendBroadcast(Broadcast b) {
         if (broadcastList.get(b.getClass()) != null) { // at least one microservice subscribed to broadcast
-            BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
-            for (MicroService ms : subscribers) {
-                synchronized (broadcastKey) {
-                    if (queues.containsKey(ms)) queues.get(ms).add(b);
+            synchronized (broadcastKey) {
+                BlockingQueue<MicroService> subscribers = broadcastList.get(b.getClass());
+                for (MicroService ms : subscribers) {
+                    queues.get(ms).add(b);
                     broadcastKey.notifyAll();
                 }
             }
@@ -114,13 +114,13 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public <T> Future<T> sendEvent(Event<T> e) {
-        Future<T> future = null;
-        if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event
-            synchronized (eventKey) {
+        Future<T> future;
+        synchronized (eventKey) {
+            if (eventList.get(e.getClass()) != null) { // at least one microservice subscribed to event
                 MicroService recipient = eventList.get(e.getClass()).remove(); // get next in line by round robin
                 queues.get(recipient).add(e);
-                eventKey.notifyAll();
                 eventList.get(e.getClass()).add(recipient); // add to end of queue
+                eventKey.notifyAll();
             }
             future = new Future<>();
             futuresList.put(e, future);
@@ -154,16 +154,18 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void unregister(MicroService m) {
         if (!isRegistered(m)) throw new IllegalStateException("MicroService is not registered");
-        for (BlockingQueue<MicroService> subscribed : eventList.values())
-            synchronized (eventKey) {
+        synchronized (eventKey) {
+            for (BlockingQueue<MicroService> subscribed : eventList.values()) {
                 subscribed.remove(m);
                 eventKey.notifyAll();
             }
-        for (BlockingQueue<MicroService> subscribed : broadcastList.values())
-            synchronized (broadcastKey) {
+        }
+        synchronized (broadcastKey) {
+            for (BlockingQueue<MicroService> subscribed : broadcastList.values()) {
                 subscribed.remove(m);
                 broadcastKey.notifyAll();
             }
+        }
         queues.remove(m); // only one ms can unregister itself
     }
 
