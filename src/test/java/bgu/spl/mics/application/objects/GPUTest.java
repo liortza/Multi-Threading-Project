@@ -1,81 +1,118 @@
-//package bgu.spl.mics.application.objects;
-//
-//import bgu.spl.mics.Event;
-//import bgu.spl.mics.application.messages.TestModelEvent;
-//import bgu.spl.mics.application.messages.TrainModelEvent;
-//import org.junit.After;
-//import org.junit.Before;
-//import org.junit.Test;
-//
-//import static org.junit.Assert.*;
-//
-//public class GPUTest {
-//    Cluster cluster;
-//    GPU gpu;
-//    Data data;
-//    Model model;
-//    Event<Model> trainEvent;
-//    Event<Model.Status> testEvent;
-//
-//    @Before
-//    public void setUp() throws Exception {
-//        cluster = new Cluster();
-//        gpu = new GPU(GPU.Type.RTX3090, cluster);
-//        data = new Data(Data.Type.Images, 1000);
-//        model = new Model("test", data);
-//        trainEvent = new TrainModelEvent("gpuTrain", model);
-//        testEvent = new TestModelEvent("gpuTest", model);
-//    }
-//
-//    @After
-//    public void tearDown() throws Exception {
-//    }
-//
-//    @Test
-//    public void updateTick() {
-//        int currentTick = gpu.getCurrentTick();
-//        gpu.updateTick();
-//        assertEquals(currentTick + 1, gpu.getCurrentTick());
-//    }
-//
-//    @Test
-//    public void prepareBatches() {
-//        assertEquals(0, gpu.getRemainingModelBatches());
-//        int discSize = gpu.getDiscSize();
-//        gpu.prepareBatches(data); // should create 20 Batches
-//        assertEquals(discSize + 20, gpu.getDiscSize());
-//        assertEquals(20, gpu.getRemainingModelBatches());
-//        assertThrows("Cannot prepare batches from null data", IllegalArgumentException.class, () -> gpu.prepareBatches(null));
-//    }
-//
-//    @Test
-//    public void sendBatchesToCluster() {
-//        gpu.prepareBatches(data);
-//        int discSize = gpu.getDiscSize();
-//        gpu.sendBatchesToCluster(discSize);
-//        assertEquals(0, gpu.getDiscSize());
-//        assertThrows("numOfBatches must be positive", IllegalArgumentException.class, () -> gpu.sendBatchesToCluster(-1));
-//    }
-//
-//    @Test
-//    public void trainProcessed() {
-//        gpu.prepareBatches(data);
-//        DataBatch processed = gpu.getNextBatch();
-//        processed.process();
-//        gpu.addToVRam(processed);
-//        gpu.trainProcessed(); // should take 1 tick
-//        assertFalse(processed.isTrained());
-//        gpu.updateTick();
-//        assertTrue(processed.isTrained());
-//        assertTrue(gpu.vRamIsEmpty());
-//    }
-//
-//    @Test
-//    public void testModel() {
-//        model.train();
-//        assertEquals("None", model.getStatus());
-//        TestModelEvent e = new TestModelEvent("e", model);
-//        gpu.testModel(e);
-//        assertNotEquals("None", model.getStatus()); // can be "Good" or "Bad"
-//    }
-//}
+package bgu.spl.mics.application.objects;
+
+import bgu.spl.mics.Event;
+import bgu.spl.mics.application.messages.TestModelEvent;
+import bgu.spl.mics.application.messages.TrainModelEvent;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public class GPUTest {
+    Cluster cluster = Cluster.getInstance();
+    GPU gpu;
+    Data data;
+    DataBatch batch;
+    Model model;
+    TrainModelEvent trainEvent;
+    TestModelEvent testEvent;
+
+    @Before
+    public void setUp() throws Exception {
+        gpu = new GPU("3090");
+        data = new Data(Data.Type.Images, 1000);
+        batch = new DataBatch(data, 0, gpu);
+        model = new Model("gpuTest", data);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
+
+    @Test
+    public void updateTick() {
+        int currentTick = gpu.getCurrentTick();
+        gpu.updateTick();
+        assertEquals(currentTick + 1, gpu.getCurrentTick());
+    }
+
+    @Test
+    public void updateTickFinishModel() {
+        gpu.setCurrentModel(model);
+        gpu.setCurrentBatch(batch);
+        gpu.setTicksRemaining(0);
+        gpu.setRemainingModelBatches(1);
+        assertFalse(model.isTrained());
+        gpu.updateTick();
+        assertTrue(model.isTrained());
+    }
+
+    @Test
+    public void updateTickFinishBatch() {
+        gpu.setCurrentModel(model);
+        gpu.setCurrentBatch(batch);
+        gpu.setTicksRemaining(0);
+        gpu.setRemainingModelBatches(3);
+        int remainingBatches = gpu.getRemainingModelBatches();
+        gpu.updateTick();
+        assertEquals(remainingBatches - 1, gpu.getRemainingModelBatches());
+    }
+
+    @Test
+    public void updateTickDuringBatch() {
+        gpu.setCurrentModel(model);
+        gpu.setCurrentBatch(batch);
+        gpu.setTicksRemaining(3);
+        int ticksRemaining = gpu.getTicksRemaining();
+        int ticksUsed = gpu.getTicksUsed();
+        gpu.updateTick();
+        assertEquals(ticksRemaining - 1, gpu.getTicksRemaining());
+        assertEquals(ticksUsed + 1, gpu.getTicksUsed());
+    }
+
+    @Test
+    public void updateTickFetchBatch() {
+        gpu.setCurrentModel(model);
+        gpu.setCurrentBatch(null);
+        gpu.addToVRam(batch);
+        int vRamSize = gpu.getVRamSize();
+        assertNotNull(gpu.getCurrentBatch());
+        assertEquals(vRamSize - 1, gpu.getVRamSize());
+    }
+
+    @Test
+    public void updateTickNextTrain() {
+        gpu.setCurrentModel(null);
+        gpu.addToMessageDequeue(trainEvent);
+        gpu.updateTick();
+        assertNotNull(gpu.getCurrentModel());
+        assertEquals(data.getSize() / 1000, gpu.getDiscSize());
+    }
+
+    @Test
+    public void updateTickTest() {
+        gpu.setCurrentModel(null);
+        gpu.addToMessageDequeue(testEvent);
+        int messages = gpu.getMessageSize();
+        gpu.updateTick();
+        assertEquals(messages - 1, gpu.getMessageSize());
+    }
+
+    @Test
+    public void handleTrainEvent() {
+        int messageSize = gpu.getMessageSize();
+        trainEvent = new TrainModelEvent("gpuTrain", model);
+        gpu.handleTrainEvent(trainEvent);
+        assertEquals(messageSize + 1, gpu.getMessageSize());
+    }
+
+    @Test
+    public void handleTestEvent() {
+        int messageSize = gpu.getMessageSize();
+        testEvent = new TestModelEvent("gpuTest", model, Student.Degree.PhD);
+        gpu.handleTestEvent(testEvent);
+        assertEquals(messageSize + 1, gpu.getMessageSize());
+    }
+
+}
